@@ -72,6 +72,58 @@
                 margin-right: 10px;
                 flex-shrink: 0;
             }
+
+            /* NOVO LAYOUT PARA IMPRESSÃO DO RESUMO DO TRATAMENTO */
+            .summary-container {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 15px;
+                margin-bottom: 15px;
+            }
+            .patient-info, .medication-summary {
+                flex: 1; /* Permite que os itens cresçam para ocupar o espaço disponível */
+                min-width: 300px; /* Garante que não fiquem muito pequenos */
+                page-break-inside: avoid;
+            }
+            .info-table, .medication-table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-top: 10px;
+            }
+            .info-table td, .medication-table td {
+                padding: 3px;
+                border-bottom: 1px solid #f3f4f6;
+                font-size: 8px;
+            }
+            .info-table td:first-child {
+                width: 120px;
+                background-color: #f9fafb;
+            }
+            /* ALTERAÇÃO AQUI */
+            .medication-table th {
+                background-color: #f3f4f6;
+                font-weight: bold;
+                font-size: 8px; /* Ajusta o tamanho da fonte para o cabeçalho */
+                color: #000; /* Garante a cor preta */
+            }
+            .sessions-section {
+                clear: both;
+            }
+            
+            /* ALTERAÇÃO AQUI: REMOVE AS BORDAS DAS CÉLULAS DA TABELA DE SESSÕES */
+            .sessions-table th, .sessions-table td {
+                border: none; /* Remove a borda das células */
+                padding: 3px;
+                text-align: left;
+                font-size: 7px;
+                border-bottom: 1px solid #d1d5db; /* Adiciona uma borda inferior para separar as linhas */
+            }
+            .sessions-table th {
+                background-color: #f3f4f6;
+                font-weight: bold;
+                font-size: 8px; /* Ajusta o tamanho da fonte para o cabeçalho */
+                color: #000; /* Garante a cor preta */
+            }
         }
         
         .status-select option[value="agendada"] { color: #2563eb; }
@@ -375,10 +427,6 @@
                             <div class="text-2xl mb-2">💊</div>
                             <div class="text-sm">Medicações</div>
                         </button>
-                         <button onclick="openConfigModal('medicacoes_pillfood')" class="bg-orange-500 text-white p-4 rounded-lg hover:bg-orange-600">
-                            <div class="text-2xl mb-2">💊</div>
-                            <div class="text-sm">Medicações Pill food</div>
-                        </button>
                     </div>
                     
                     <div class="bg-gray-50 p-4 rounded mb-6">
@@ -552,8 +600,7 @@
                         profissionais: {}, 
                         procedimentos: {}, 
                         protocolos: {}, 
-                        medicacoes: {},
-                        medicacoes_pillfood: {}
+                        medicacoes: {}
                     }
                 };
                 this.unsubscribes = {}; // Armazena os ouvintes de cada coleção
@@ -574,7 +621,7 @@
                 });
                 
                 // Ouve por mudanças nas configurações (medicos, profissionais, etc.)
-                const configCollections = ['medicos', 'profissionais', 'procedimentos', 'protocolos', 'medicacoes', 'medicacoes_pillfood'];
+                const configCollections = ['medicos', 'profissionais', 'procedimentos', 'protocolos', 'medicacoes'];
                 for (const collection of configCollections) {
                     this.unsubscribes[collection] = this.db.collection('config').doc(collection).onSnapshot(doc => {
                         this.data.configData[collection] = doc.data().items || {};
@@ -604,7 +651,6 @@
                     if (s.queda_intensidade === undefined) s.queda_intensidade = '';
                     if (s.estadoCabelo === undefined) s.estadoCabelo = '';
                     if (s.medicacoes === undefined) s.medicacoes = [];
-                    if (s.medicacoes_pillfood === undefined) s.medicacoes_pillfood = [];
                     return s;
                 });
                 return paciente;
@@ -656,55 +702,6 @@
                 });
                 showNotification('Sessão avulsa adicionada!');
             }
-            
-            async addMedicationToSession(pacienteId, sessionId, medicationId, quantity, type) {
-                const paciente = this.getPacienteById(pacienteId);
-                if (!paciente) return;
-                const session = paciente.cronograma.find(s => s.sessionId === sessionId);
-                if (!session) return;
-                
-                const medicationArray = (type === 'pillfood') ? session.medicacoes_pillfood : session.medicacoes;
-                
-                if (medicationArray.some(m => m.medicationId === medicationId)) {
-                    showNotification('Esta medicação já foi adicionada nesta seção!', true);
-                    return;
-                }
-                
-                medicationArray.push({ medicationId, quantidade: quantity });
-
-                if (type === 'pillfood') {
-                    await this.db.collection('pacientes').doc(pacienteId).update({ cronograma: paciente.cronograma });
-                } else {
-                    await this.db.collection('pacientes').doc(pacienteId).update({ cronograma: paciente.cronograma });
-                }
-                
-                renderSessionsList();
-                showNotification('Medicação adicionada!');
-            }
-
-            async removeMedicationFromSession(pacienteId, sessionId, medicationId, type) {
-                const paciente = this.getPacienteById(pacienteId);
-                if (!paciente) return;
-                const session = paciente.cronograma.find(s => s.sessionId === sessionId);
-                if (!session) return;
-                
-                const medicationArray = (type === 'pillfood') ? session.medicacoes_pillfood : session.medicacoes;
-                
-                const index = medicationArray.findIndex(m => m.medicationId === medicationId);
-                if (index > -1) {
-                    medicationArray.splice(index, 1);
-                }
-
-                if (type === 'pillfood') {
-                    await this.db.collection('pacientes').doc(pacienteId).update({ cronograma: paciente.cronograma });
-                } else {
-                    await this.db.collection('pacientes').doc(pacienteId).update({ cronograma: paciente.cronograma });
-                }
-                
-                renderSessionsList();
-                showNotification('Medicação removida!');
-            }
-
 
             async updatePatientStatus(pacienteId, newStatus, dataReavaliacao = null) {
                 const paciente = this.getPacienteById(pacienteId);
@@ -1082,15 +1079,14 @@
             const professionalOptions = dataManager.getConfigArray('profissionais').map(p => `<option value="${p.id}">${p.nome}</option>`).join('');
             const procedimentoOptions = dataManager.getConfigArray('procedimentos').map(p => `<option value="${p.id}">${p.nome}</option>`).join('');
             const medicationOptions = dataManager.getConfigArray('medicacoes').map(m => `<option value="${m.id}">${m.displayName || m.nome}</option>`).join('');
-            const pillFoodOptions = dataManager.getConfigArray('medicacoes_pillfood').map(m => `<option value="${m.id}">${m.displayName || m.nome}</option>`).join('');
 
             (paciente.cronograma || []).forEach(sessao => {
-                const sessionHtml = createSessionHtml(paciente, sessao, timeSlots, professionalOptions, procedimentoOptions, medicationOptions, pillFoodOptions);
+                const sessionHtml = createSessionHtml(paciente, sessao, timeSlots, professionalOptions, procedimentoOptions, medicationOptions);
                 container.appendChild(sessionHtml);
             });
         }
         
-        function createSessionHtml(paciente, sessao, timeSlots, professionalOptions, procedimentoOptions, medicationOptions, pillFoodOptions) {
+        function createSessionHtml(paciente, sessao, timeSlots, professionalOptions, procedimentoOptions, medicationOptions) {
             const div = document.createElement('div');
             div.className = 'bg-gray-50 border rounded p-4';
             const isFinalizada = sessao.status === 'finalizada';
@@ -1105,9 +1101,57 @@
 
             const canEncerrarSession = !isFinalizada && !isFinalized && requiredFieldsFilled && requiredMedicationFilled;
 
-            let medicationsHtml = createMedicationSectionHtml(sessao, medicationOptions, 'medicacoes', isReadOnly);
-            let pillfoodHtml = createMedicationSectionHtml(sessao, pillFoodOptions, 'medicacoes_pillfood', isReadOnly);
+            let medicationsHtml = '';
+            const hasMedications = (sessao.medicacoes && sessao.medicacoes.length > 0);
+            
+            const isMedicationSectionReadOnly = isFinalizada || isFinalized;
 
+            if (isMedicationSectionReadOnly) {
+                 medicationsHtml = `
+                     <div class="mb-4">
+                         <label class="block text-sm font-medium mb-2">Medicações:</label>
+                         <div class="space-y-1">
+                             ${(sessao.medicacoes || []).map(medRef => {
+                                 const med = dataManager.getConfigItem('medicacoes', medRef.medicationId);
+                                 const displayName = med ? (med.displayName || med.nome) : 'Medicação desconhecida';
+                                 return `
+                                     <div class="bg-blue-50 px-2 py-1 rounded text-sm">
+                                         <span>${displayName} - Qtd: ${medRef.quantidade || 'N/A'}</span>
+                                     </div>
+                                 `;
+                             }).join('')}
+                         </div>
+                     </div>
+                 `;
+            } else {
+                medicationsHtml = `
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium mb-2">Medicações:</label>
+                        <div class="flex items-center gap-2 mb-2">
+                            <select id="medSelect-${sessao.sessionId}" class="flex-1 px-2 py-1 border rounded">
+                                <option value="">Selecione a medicação</option>
+                                ${medicationOptions}
+                            </select>
+                            <input type="number" id="medQuantity-${sessao.sessionId}" placeholder="Qtd" step="any" min="0" class="w-16 px-2 py-1 border rounded">
+                            <button onclick="addMedicationToSession('${sessao.sessionId}')" class="bg-green-500 text-white px-3 py-1 rounded text-sm hover:bg-green-600">Adicionar</button>
+                        </div>
+                        
+                        <div class="space-y-1">
+                            ${(sessao.medicacoes || []).map(medRef => {
+                                const med = dataManager.getConfigItem('medicacoes', medRef.medicationId);
+                                const displayName = med ? (med.displayName || med.nome) : 'Medicação desconhecida';
+                                return `
+                                    <div class="flex justify-between items-center bg-blue-50 px-2 py-1 rounded text-sm">
+                                        <span>${displayName} - Qtd: ${medRef.quantidade || 'N/A'}</span>
+                                        <button onclick="removeMedicationFromSession('${sessao.sessionId}', '${medRef.medicationId}')" class="text-red-500 hover:text-red-700 text-xs">✕</button>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+            
             const medicamentoDescricaoHidden = sessao.medicamento_necessario === 'sim' ? '' : 'hidden';
 
             const encerrarBtnHtml = canEncerrarSession
@@ -1155,7 +1199,6 @@
                 </div>
                 
                 ${medicationsHtml}
-                ${pillfoodHtml}
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                     <div class="col-span-1">
@@ -1213,60 +1256,10 @@
             return div;
         }
 
-        // Nova função para gerar as seções de medicação
-        function createMedicationSectionHtml(sessao, optionsHtml, type, isReadOnly) {
-            const medArray = (type === 'medicacoes_pillfood') ? (sessao.medicacoes_pillfood || []) : (sessao.medicacoes || []);
-            const title = (type === 'medicacoes_pillfood') ? 'Medicações Pill food' : 'Medicações';
-            const selectId = `medSelect-${type}-${sessao.sessionId}`;
-            const quantityId = `medQuantity-${type}-${sessao.sessionId}`;
-            
-            if (isReadOnly) {
-                 return `
-                     <div class="mb-4">
-                         <label class="block text-sm font-medium mb-2">${title}:</label>
-                         <div class="space-y-1">
-                             ${medArray.map(medRef => {
-                                 const med = dataManager.getConfigItem(type, medRef.medicationId);
-                                 const displayName = med ? (med.displayName || med.nome) : 'Medicação desconhecida';
-                                 return `
-                                     <div class="bg-blue-50 px-2 py-1 rounded text-sm">
-                                         <span>${displayName} - Qtd: ${medRef.quantidade || 'N/A'}</span>
-                                     </div>
-                                 `;
-                             }).join('')}
-                         </div>
-                     </div>
-                 `;
-            } else {
-                return `
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium mb-2">${title}:</label>
-                        <div class="flex items-center gap-2 mb-2">
-                            <select id="${selectId}" class="flex-1 px-2 py-1 border rounded">
-                                <option value="">Selecione a medicação</option>
-                                ${optionsHtml}
-                            </select>
-                            <input type="number" id="${quantityId}" placeholder="Qtd" min="0" step="0.5" class="w-16 px-2 py-1 border rounded">
-                            <button onclick="addMedicationToSession('${sessao.sessionId}', '${type}')" class="bg-green-500 text-white px-3 py-1 rounded text-sm hover:bg-green-600">Adicionar</button>
-                        </div>
-                        
-                        <div class="space-y-1">
-                            ${medArray.map(medRef => {
-                                const med = dataManager.getConfigItem(type, medRef.medicationId);
-                                const displayName = med ? (med.displayName || med.nome) : 'Medicação desconhecida';
-                                return `
-                                    <div class="flex justify-between items-center bg-blue-50 px-2 py-1 rounded text-sm">
-                                        <span>${displayName} - Qtd: ${medRef.quantidade || 'N/A'}</span>
-                                        <button onclick="removeMedicationFromSession('${sessao.sessionId}', '${medRef.medicationId}', '${type}')" class="text-red-500 hover:text-red-700 text-xs">✕</button>
-                                    </div>
-                                `;
-                            }).join('')}
-                        </div>
-                    </div>
-                `;
-            }
+        function isQuedaPresente(sessao) {
+            return sessao.queda_presente === 'sim';
         }
-        
+
         async function updateQuedaDropdowns(sessionId) {
             const quedaPresenteSelect = document.getElementById(`quedaPresente-${sessionId}`);
             const quedaIntensidadeDiv = document.getElementById(`quedaIntensidadeDiv-${sessionId}`);
@@ -1376,23 +1369,53 @@
             renderSessionsList();
         }
 
-        async function addMedicationToSession(sessionId, type) {
-            const medSelect = document.getElementById(`medSelect-${type}-${sessionId}`);
-            const quantityInput = document.getElementById(`medQuantity-${type}-${sessionId}`);
+        async function addMedicationToSession(sessionId) {
+            const medSelect = document.getElementById(`medSelect-${sessionId}`);
+            const quantityInput = document.getElementById(`medQuantity-${sessionId}`);
             
             const medicationId = medSelect.value;
-            const quantity = parseFloat(quantityInput.value);
+            const quantity = parseFloat(quantityInput.value); // Converte o valor do input para número decimal
             
             if (!medicationId || isNaN(quantity) || quantity <= 0) {
                 showNotification('Selecione uma medicação e digite uma quantidade válida!', true);
                 return;
             }
             
-            await dataManager.addMedicationToSession(currentPatientId, sessionId, medicationId, quantity, type);
+            const paciente = dataManager.getPacienteById(currentPatientId);
+            const session = paciente.cronograma.find(s => s.sessionId === sessionId);
+            if (!session) return;
+            
+            if (!session.medicacoes) { 
+                session.medicacoes = []; 
+            }
+            
+            // Procura por uma medicação existente com o mesmo ID
+            const existingMedication = session.medicacoes.find(m => m.medicationId === medicationId);
+            
+            if (existingMedication) {
+                // Converte a quantidade existente para decimal antes de somar
+                existingMedication.quantidade = parseFloat(existingMedication.quantidade) + quantity;
+            } else {
+                // Se a medicação não existe, adiciona uma nova entrada
+                session.medicacoes.push({ medicationId, quantidade: quantity });
+            }
+            
+            // Limpa os campos de input após adicionar
+            medSelect.value = '';
+            quantityInput.value = '';
+
+            await dataManager.db.collection('pacientes').doc(currentPatientId).update({ cronograma: paciente.cronograma });
+            renderSessionsList();
         }
 
-        async function removeMedicationFromSession(sessionId, medicationId, type) {
-            await dataManager.removeMedicationFromSession(currentPatientId, sessionId, medicationId, type);
+        async function removeMedicationFromSession(sessionId, medicationId) {
+            const paciente = dataManager.getPacienteById(currentPatientId);
+            const session = paciente.cronograma.find(s => s.sessionId === sessionId);
+            if (!session) return;
+            
+            session.medicacoes = session.medicacoes.filter(m => m.medicationId !== medicationId);
+            await dataManager.db.collection('pacientes').doc(currentPatientId).update({ cronograma: paciente.cronograma });
+            renderSessionsList();
         }
 
         async function deleteSession(sessionId) {
@@ -1432,7 +1455,7 @@
             await dataManager.addSession(currentPatientId, {
                 data: newDate.toISOString().split('T')[0],
                 status: 'agendada',
-                horario: '', profissional: '', procedimento: '', medicacoes: [], medicacoes_pillfood: []
+                horario: '', profissional: '', procedimento: '', medicacoes: []
             });
         };
 
@@ -1496,15 +1519,13 @@
         
         function openConfigModal(type) {
             currentConfigType = type;
-            const titles = { medicos: '👨‍⚕️ Gerenciar Médicos', profissionais: '👩‍💼 Gerenciar Profissionais', procedimentos: '🔧 Gerenciar Procedimentos', protocolos: '📋 Gerenciar Protocolos', medicacoes: '💊 Gerenciar Medicações', medicacoes_pillfood: '💊 Gerenciar Medicações Pill food' };
+            const titles = { medicos: '👨‍⚕️ Gerenciar Médicos', profissionais: '👩‍💼 Gerenciar Profissionais', procedimentos: '🔧 Gerenciar Procedimentos', protocolos: '📋 Gerenciar Protocolos', medicacoes: '💊 Gerenciar Medicações' };
             
             document.getElementById('modalTitle').textContent = titles[type];
             document.getElementById('protocolForm').classList.toggle('hidden', type !== 'protocolos');
-            document.getElementById('medicationForm').classList.toggle('hidden', type !== 'medicacoes' && type !== 'medicacoes_pillfood');
-            document.getElementById('regularForm').classList.toggle('hidden', type === 'protocolos' || type === 'medicacoes' || type === 'medicacoes_pillfood');
-            if (type === 'medicacoes' || type === 'medicacoes_pillfood') {
-                document.getElementById('medicationName').placeholder = `Nome da medicação ${type === 'medicacoes_pillfood' ? 'Pill food' : ''}`;
-            } else if (type !== 'protocolos') {
+            document.getElementById('medicationForm').classList.toggle('hidden', type !== 'medicacoes');
+            document.getElementById('regularForm').classList.toggle('hidden', type === 'protocolos' || type === 'medicacoes');
+            if (type !== 'protocolos' && type !== 'medicacoes') {
                 document.getElementById('newItemInput').placeholder = `Nome do ${type.slice(0, -1)}`;
             }
             
@@ -1555,9 +1576,9 @@
             if (lote) displayName += ` Lote: ${lote}`;
             if (validade) { displayName += ` Val: ${new Date(validade).toLocaleDateString('pt-BR')}`; }
 
-            if (dataManager.getConfigArray(currentConfigType).some(med => med.displayName === displayName)) { showNotification('Esta medicação já existe!', true); return; }
+            if (dataManager.getConfigArray('medicacoes').some(med => med.displayName === displayName)) { showNotification('Esta medicação já existe!', true); return; }
             
-            await dataManager.addConfigItem(currentConfigType, { nome, ref, lote, validade, displayName });
+            await dataManager.addConfigItem('medicacoes', { nome, ref, lote, validade, displayName });
             document.getElementById('medicationForm').querySelectorAll('input').forEach(el => el.value = '');
         }
         
@@ -1601,7 +1622,7 @@
                 div.className = 'flex items-center justify-between p-3 border rounded';
                 if (currentConfigType === 'protocolos') {
                     div.innerHTML = `<div><strong>${item.nome}</strong><br><small class="text-gray-600">${item.sessoes} sessões - ${item.frequencia}</small></div>`;
-                } else if (currentConfigType === 'medicacoes' || currentConfigType === 'medicacoes_pillfood') {
+                } else if (currentConfigType === 'medicacoes') {
                     div.innerHTML = `<div><strong>${item.displayName || item.nome}</strong></div>`;
                 } else {
                     div.innerHTML = `<input type="text" value="${item.nome}" class="flex-1 px-2 py-1 border rounded mr-2" oninput="this.value = capitalizeWords(this.value)" onblur="editConfigItem('${item.id}', this.value)" onkeypress="if(event.key==='Enter') editConfigItem('${item.id}', this.value)">`;
@@ -2047,7 +2068,7 @@
                 sessionId: generateUUID(),
                 data: currentDate.toISOString().split('T')[0],
                 status: 'agendada',
-                horario: '', profissional: '', procedimento: '', medicacoes: [], medicacoes_pillfood: []
+                horario: '', profissional: '', procedimento: '', medicacoes: []
             });
 
             if (protocolo.frequencia === 'semanal') {
@@ -2196,44 +2217,44 @@
                         medicationStats[medName].totalQuantity += medRef.quantidade || 0;
                     }
                 });
-                (sessao.medicacoes_pillfood || []).forEach(medRef => {
-                    const med = dataManager.getConfigItem('medicacoes_pillfood', medRef.medicationId);
-                    if (med) {
-                        const medName = med.displayName || med.nome;
-                        if (!medicationStats[medName]) medicationStats[medName] = { totalUses: 0, totalQuantity: 0 };
-                        medicationStats[medName].totalUses++;
-                        medicationStats[medName].totalQuantity += medRef.quantidade || 0;
-                    }
-                });
             });
             const medico = dataManager.getConfigItem('medicos', paciente.medico)?.nome || 'N/A';
             const protocolo = dataManager.getConfigItem('protocolos', paciente.protocolo)?.nome || 'N/A';
             
+            // Alteração na estrutura do HTML para o resumo de impressão
             let content = `
                 <div class="header"><h1>TricoMaster Pro - Resumo do Tratamento</h1><p class="date">Relatório gerado em: ${new Date().toLocaleString('pt-BR')}</p></div>
-                <div class="patient-info"><h2>Dados do Paciente</h2>
-                    <table class="info-table">
-                        <tr><td><strong>Nome:</strong></td><td>${paciente.nome}</td></tr>
-                        <tr><td><strong>Médico:</strong></td><td>${medico}</td></tr>
-                        <tr><td><strong>Tipo:</strong></td><td>${paciente.tipo}</td></tr>
-                        <tr><td><strong>Protocolo:</strong></td><td>${protocolo}</td></tr>
-                        <tr><td><strong>Início:</strong></td><td>${new Date(paciente.inicio + 'T00:00:00').toLocaleDateString('pt-BR')}</td></tr>
-                        <tr><td><strong>Status:</strong></td><td>${paciente.status || 'ativo'}</td></tr>
-                        <tr><td><strong>Progresso:</strong></td><td>${finalizadas}/${paciente.totalSessoes} sessões finalizadas (${Math.round((finalizadas/paciente.totalSessoes)*100)}%)</td></tr>
-                    </table>
+                
+                <div class="summary-container">
+                    <div class="patient-info">
+                        <h2>Dados do Paciente</h2>
+                        <table class="info-table">
+                            <tr><td><strong>Nome:</strong></td><td>${paciente.nome}</td></tr>
+                            <tr><td><strong>Médico:</strong></td><td>${medico}</td></tr>
+                            <tr><td><strong>Tipo:</strong></td><td>${paciente.tipo}</td></tr>
+                            <tr><td><strong>Protocolo:</strong></td><td>${protocolo}</td></tr>
+                            <tr><td><strong>Início:</strong></td><td>${new Date(paciente.inicio + 'T00:00:00').toLocaleDateString('pt-BR')}</td></tr>
+                            <tr><td><strong>Status:</strong></td><td>${paciente.status || 'ativo'}</td></tr>
+                            <tr><td><strong>Progresso:</strong></td><td>${finalizadas}/${paciente.totalSessoes} sessões finalizadas (${Math.round((finalizadas/paciente.totalSessoes)*100)}%)</td></tr>
+                        </table>
+                    </div>
+                    
+                    ${Object.keys(medicationStats).length > 0 ? `
+                    <div class="medication-summary">
+                        <h2>Resumo de Medicações Utilizadas</h2>
+                        <table class="medication-table">
+                            <thead><tr><th>Medicação</th><th>Qtd Utilizada</th><th>Quantidade Total</th></tr></thead>
+                            <tbody>
+                                ${Object.entries(medicationStats).sort(([,a], [,b]) => b.totalUses - a.totalUses).map(([medName, stats]) => `
+                                    <tr><td>${medName}</td><td>${stats.totalUses}</td><td>${stats.totalQuantity}</td></tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>` : ''}
                 </div>
-                ${Object.keys(medicationStats).length > 0 ? `
-                <div class="medication-summary"><h2>Resumo de Medicações Utilizadas</h2>
-                    <table class="medication-table">
-                        <thead><tr><th>Medicação</th><th>Qtd Utilizada</th><th>Quantidade Total</th></tr></thead>
-                        <tbody>
-                            ${Object.entries(medicationStats).sort(([,a], [,b]) => b.totalUses - a.totalUses).map(([medName, stats]) => `
-                                <tr><td>${medName}</td><td>${stats.totalUses}</td><td>${stats.totalQuantity}</td></tr>
-                            `).join('')}
-                        </tbody>
-                    </table>
-                </div>` : ''}
-                <div class="sessions-section"><h3>Histórico de Sessões</h3>
+                
+                <div class="sessions-section">
+                    <h3>Histórico de Sessões</h3>
                     <table class="sessions-table">
                         <thead><tr><th>Sessão</th><th>Data</th><th>Profissional</th><th>Procedimento</th><th>Medicações</th></tr></thead>
                         <tbody>
@@ -2241,31 +2262,32 @@
                                 const profissional = dataManager.getConfigItem('profissionais', sessao.profissional)?.nome || '-';
                                 const procedimento = dataManager.getConfigItem('procedimentos', sessao.procedimento)?.nome || '-';
                                 const medicacoes = (sessao.medicacoes || []).length > 0 ? sessao.medicacoes.map(medRef => `${dataManager.getConfigItem('medicacoes', medRef.medicationId)?.displayName || 'Desconhecido'} (Qtd: ${medRef.quantidade || 'N/A'})`).join(', ') : '-';
-                                const pillfood = (sessao.medicacoes_pillfood || []).length > 0 ? sessao.medicacoes_pillfood.map(medRef => `${dataManager.getConfigItem('medicacoes_pillfood', medRef.medicationId)?.displayName || 'Desconhecido'} (Qtd: ${medRef.quantidade || 'N/A'})`).join(', ') : '-';
-                                const allMeds = (medicacoes !== '-' && pillfood !== '-') ? `${medicacoes}, ${pillfood}` : (medicacoes !== '-') ? medicacoes : pillfood;
                                 return `
                                     <tr>
                                         <td>${index + 1}</td><td>${sessao.data ? new Date(sessao.data + 'T00:00:00').toLocaleDateString('pt-BR') : '-'}</td>
-                                        <td>${profissional}</td><td>${procedimento}</td><td>${allMeds}</td>
+                                        <td>${profissional}</td><td>${procedimento}</td><td>${medicacoes}</td>
                                     </tr>`;
                             }).join('')}
                         </tbody>
                     </table>
                 </div>`;
+
             const printWindow = window.open('', '_blank');
             printWindow.document.write(`<html><head><title>Resumo do Tratamento - ${paciente.nome}</title><style>
                 body { font-family: Arial, sans-serif; margin: 15px; line-height: 1.2; color: #333; font-size: 8px; }
                 .header { text-align: center; border-bottom: 1px solid #333; padding-bottom: 8px; margin-bottom: 15px; }
                 .header h1 { color: #2563eb; margin-bottom: 3px; font-size: 14px; }
                 .date { color: #666; font-size: 8px; }
-                .patient-info, .sessions-section, .medication-summary { margin-bottom: 15px; page-break-inside: avoid; }
+                .summary-container { display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 15px; }
+                .patient-info, .medication-summary { flex: 1; min-width: 300px; page-break-inside: avoid; }
                 h2, h3 { color: #1f2937; border-bottom: 1px solid #e5e7eb; padding-bottom: 3px; font-size: 12px; }
-                .info-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-                .info-table td { padding: 3px; border-bottom: 1px solid #f3f4f6; font-size: 8px; }
+                .info-table, .medication-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+                .info-table td, .medication-table td { padding: 3px; border-bottom: 1px solid #f3f4f6; font-size: 8px; }
                 .info-table td:first-child { width: 120px; background-color: #f9fafb; }
-                .sessions-table, .medication-table { width: 100%; border-collapse: collapse; margin-top: 8px; }
-                .sessions-table th, .sessions-table td, .medication-table th, .medication-table td { border: 1px solid #d1d5db; padding: 3px; text-align: left; font-size: 7px; }
-                .sessions-table th, .medication-table th { background-color: #f3f4f6; font-weight: bold; }
+                .medication-table th { background-color: #f3f4f6; font-weight: bold; font-size: 8px; color: #000; }
+                .sessions-section { clear: both; page-break-inside: avoid; }
+                .sessions-table th, .sessions-table td { border: none; padding: 3px; text-align: left; font-size: 7px; border-bottom: 1px solid #d1d5db; }
+                .sessions-table th { background-color: #f3f4f6; font-weight: bold; font-size: 8px; color: #000; }
                 </style></head><body>${content}</body></html>`);
             printWindow.document.close();
             printWindow.print();
