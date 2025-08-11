@@ -1,0 +1,2244 @@
+html
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tricomaster Pro - Sistema Completo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @media print {
+            .no-print { display: none !important; }
+            
+            body { 
+                font-family: Arial, sans-serif; 
+                margin: 15px; 
+                line-height: 1.2; 
+                color: #333; 
+                font-size: 8px; 
+            }
+            .header { 
+                text-align: center; 
+                border-bottom: 1px solid #333; 
+                padding-bottom: 8px; 
+                margin-bottom: 15px; 
+            }
+            .header h1 { 
+                color: #2563eb; 
+                margin-bottom: 3px; 
+                font-size: 14px; 
+            }
+            .date { 
+                color: #666; 
+                font-size: 8px; 
+            }
+            .report-section { 
+                margin-bottom: 15px; 
+                page-break-inside: avoid; 
+            }
+            h2, h3 { 
+                color: #1f2937; 
+                border-bottom: 1px solid #e5e7eb; 
+                padding-bottom: 3px; 
+                font-size: 12px; 
+            }
+            .print-table, .report-table { 
+                width: 100%; 
+                border-collapse: collapse; 
+                margin-top: 8px; 
+            }
+            .print-table th, .print-table td, .report-table th, .report-table td { 
+                border: 1px solid #d1d5db; 
+                padding: 3px; 
+                text-align: left; 
+                font-size: 7px; 
+            }
+            .print-table th, .report-table th { 
+                background-color: #f3f4f6; 
+                font-weight: bold; 
+            }
+            .report-filters-line {
+                font-size: 7px;
+                display: flex;
+                flex-wrap: nowrap;
+                justify-content: space-between;
+                overflow: hidden;
+                white-space: nowrap;
+                margin-bottom: 5px;
+            }
+            .report-filters-line strong {
+                font-weight: bold;
+            }
+            .report-filters-line > div {
+                margin-right: 10px;
+                flex-shrink: 0;
+            }
+        }
+        
+        .status-select option[value="agendada"] { color: #2563eb; }
+        .status-select option[value="finalizada"] { color: #16a34a; }
+        .status-select option[value="reavaliacao"] { color: #dc2626; }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+
+    <script>
+      const firebaseConfig = {
+        apiKey: "AIzaSyCgyC8zQcc4ofl7HjA4gWhT9Ll3RoWvtVk",
+        authDomain: "gs-tricomaster.firebaseapp.com",
+        projectId: "gs-tricomaster",
+        storageBucket: "gs-tricomaster.firebasestorage.app",
+        messagingSenderId: "533452308099",
+        appId: "1:533452308099:web:1318f589088510ccd965b6"
+      };
+
+      firebase.initializeApp(firebaseConfig);
+      const db = firebase.firestore();
+      const auth = firebase.auth();
+    </script>
+    
+    <div id="loginScreen" class="fixed inset-0 bg-gray-100 flex items-center justify-center z-50">
+        <div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-sm text-center">
+            <h2 class="text-2xl font-bold mb-6">TricoMaster Pro</h2>
+            <p class="mb-4">Faça login para continuar</p>
+            <input type="email" id="loginEmail" placeholder="Email" class="w-full p-2 mb-3 border rounded">
+            <input type="password" id="loginPassword" placeholder="Senha" class="w-full p-2 mb-4 border rounded">
+            <button id="loginBtn" class="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700">Entrar</button>
+            <p id="loginError" class="text-red-500 text-sm mt-3 hidden">Erro ao fazer login. Verifique seu email e senha.</p>
+        </div>
+    </div>
+
+    <div id="app" class="hidden">
+        <header class="bg-blue-600 text-white p-4 no-print">
+            <div class="max-w-6xl mx-auto flex justify-between items-center">
+                <div>
+                    <h1 class="text-2xl font-bold">🩺 TricoMaster Pró Tatuapé</h1>
+                    <p class="text-blue-100">Sistema de Gestão Capilar Completo</p>
+                </div>
+                <button onclick="logout()" class="bg-blue-800 text-white px-4 py-2 rounded-lg hover:bg-blue-900">Sair</button>
+            </div>
+        </header>
+
+        <div class="max-w-6xl mx-auto p-4">
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6 no-print">
+                <div class="bg-blue-500 text-white rounded-lg p-4 text-center">
+                    <h3 class="text-sm">Total Pacientes</h3>
+                    <p class="text-2xl font-bold" id="totalPacientes">0</p>
+                </div>
+                <div class="bg-blue-800 text-white rounded-lg p-4 text-center">
+                    <h3 class="text-sm">Pacientes em Tratamento</h3>
+                    <p class="text-2xl font-bold" id="pacientesComSessao">0</p>
+                </div>
+                <div class="bg-green-500 text-white rounded-lg p-4 text-center">
+                    <h3 class="text-sm">Sessões Realizadas</h3>
+                    <p class="text-2xl font-bold" id="finalizadas">0</p>
+                </div>
+                <div class="bg-yellow-500 text-white rounded-lg p-4 text-center cursor-pointer" onclick="showReavaliacaoModal()">
+                    <h3 class="text-sm">Reavaliação</h3>
+                    <p class="text-2xl font-bold" id="reavaliacaoPendentes">0</p>
+                </div>
+                <div class="bg-red-500 text-white rounded-lg p-4 text-center cursor-pointer" onclick="showOverdueSessions()">
+                    <h3 class="text-sm">Atrasadas</h3>
+                    <p class="text-2xl font-bold" id="atrasadas">0</p>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-lg shadow mb-6 no-print">
+                <div class="flex justify-between items-center px-4 py-3 border-b border-gray-200">
+                    <div class="flex items-center space-x-2">
+                        <button id="prevWeek" class="bg-gray-200 text-gray-700 px-3 py-1 rounded hover:bg-gray-300 transition-colors duration-200 text-lg">←</button>
+                        <h2 class="text-xl font-bold text-gray-800" id="weekRange"></h2>
+                        <button id="nextWeek" class="bg-gray-200 text-gray-700 px-3 py-1 rounded hover:bg-gray-300 transition-colors duration-200 text-lg">→</button>
+                    </div>
+                    <button id="currentWeek" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors duration-200 text-sm">Hoje</button>
+                </div>
+                <div class="grid grid-cols-7 text-center font-semibold text-gray-600 border-b border-gray-200">
+                    <span class="py-2">Dom</span>
+                    <span class="py-2">Seg</span>
+                    <span class="py-2">Ter</span>
+                    <span class="py-2">Qua</span>
+                    <span class="py-2">Qui</span>
+                    <span class="py-2">Sex</span>
+                    <span class="py-2">Sáb</span>
+                </div>
+                <div id="calendarDays" class="grid grid-cols-7 gap-1 p-4">
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow mb-6 no-print">
+                <div class="flex border-b">
+                    <button id="pacientesTab" class="px-6 py-3 bg-blue-500 text-white rounded-tl-lg">📅 Agenda</button>
+                    <button id="relatoriosTab" class="px-6 py-3 bg-gray-200 text-gray-700">📊 Relatórios</button>
+                    <button id="configTab" class="px-6 py-3 bg-gray-200 text-gray-700">⚙️ Configurações</button>
+                </div>
+
+                <div id="pacientesContent" class="p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-bold">Gerenciar Pacientes</h2>
+                        <div class="space-x-2">
+                            <button id="novoPacienteBtn" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">+ Novo Paciente</button>
+                            <button id="procurarPacienteBtn" class="bg-green-800 text-white px-4 py-2 rounded hover:bg-green-900">🔍 Procurar Paciente</button>
+                        </div>
+                    </div>
+                    
+                    <div id="procurarPacienteForm" class="hidden bg-gray-50 p-4 rounded mb-4">
+                        <h3 class="font-bold mb-3">Procurar Paciente</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-6 gap-2 mb-3">
+                            <input type="text" id="searchInput" placeholder="Digite o nome do paciente..." class="px-3 py-2 border rounded col-span-2">
+                            <input type="date" id="dateFilterStart" class="px-3 py-2 border rounded" title="Data inicial">
+                            <input type="date" id="dateFilterEnd" class="px-3 py-2 border rounded" title="Data final">
+                            <select id="statusFilter" class="px-3 py-2 border rounded">
+                                <option value="todas">Todas</option>
+                                <option value="agendada">Agendada</option>
+                                <option value="finalizada">Finalizada</option>
+                                <option value="reavaliacao">Reavaliação</option>
+                            </select>
+                            <button id="limparBusca" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">Limpar</button>
+                        </div>
+                        <p class="text-sm text-gray-600">Use os filtros para encontrar pacientes com sessões no período e status selecionados</p>
+                    </div>
+                    
+                    <div id="novoPacienteForm" class="hidden bg-gray-50 p-4 rounded mb-4">
+                        <h3 class="font-bold mb-3">Cadastrar Paciente</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <input type="text" id="nomeInput" placeholder="Nome completo" class="px-3 py-2 border rounded" oninput="this.value = capitalizeWords(this.value)">
+                            <select id="medicoInput" class="px-3 py-2 border rounded">
+                                <option value="">Selecione o médico</option>
+                            </select>
+                            <select id="protocoloInput" class="px-3 py-2 border rounded">
+                                <option value="">Selecione o protocolo</option>
+                            </select>
+                            <select id="tipoInput" class="px-3 py-2 border rounded">
+                                <option value="">Selecione o tipo</option>
+                                <option value="Protocolo Inicial">Protocolo Inicial</option>
+                                <option value="Manutenção">Manutenção</option>
+                            </select>
+                            <input type="date" id="inicioInput" class="px-3 py-2 border rounded">
+                        </div>
+                        <div class="mt-4 space-x-2">
+                            <button id="salvarPaciente" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Salvar</button>
+                            <button id="cancelarPaciente" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">Cancelar</button>
+                        </div>
+                    </div>
+
+                    <div id="listaPacientes" class="space-y-3"></div>
+                    
+                    <div id="paginationContainer" class="flex justify-center items-center space-x-2 mt-6">
+                        <button id="prevPage" class="bg-gray-500 text-white px-3 py-1 rounded hover:bg-gray-600 disabled:opacity-50">← Anterior</button>
+                        <span id="pageInfo" class="text-sm text-gray-600">Página 1 de 1</span>
+                        <button id="nextPage" class="bg-gray-500 text-white px-3 py-1 rounded hover:bg-gray-600 disabled:opacity-50">Próxima →</button>
+                    </div>
+                </div>
+
+                <div id="relatoriosContent" class="p-6 hidden">
+                    <h2 class="text-xl font-bold mb-4">📊 Relatórios</h2>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                        <button onclick="openReportForm('sessoes')" class="bg-blue-500 text-white p-4 rounded-lg hover:bg-blue-600">
+                            <div class="text-2xl mb-2">📅</div>
+                            <div class="text-sm">Relatório de Sessões</div>
+                        </button>
+                        <button onclick="openReportForm('medicacoes')" class="bg-green-500 text-white p-4 rounded-lg hover:bg-green-600">
+                            <div class="text-2xl mb-2">💊</div>
+                            <div class="text-sm">Relatório de Medicações</div>
+                        </button>
+                        <button onclick="openReportForm('dashboard')" class="bg-purple-500 text-white p-4 rounded-lg hover:bg-purple-600">
+                            <div class="text-2xl mb-2">📊</div>
+                            <div class="text-sm">Relatório Dashboard</div>
+                        </button>
+                    </div>
+                    
+                    <div id="reportForm" class="hidden bg-gray-50 p-4 rounded">
+                        <h3 class="font-bold mb-4" id="reportFormTitle">Filtros do Relatório</h3>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <label class="block text-sm font-medium mb-1">Data Inicial:</label>
+                                <input type="date" id="reportStartDate" class="w-full px-3 py-2 border rounded">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-1">Data Final:</label>
+                                <input type="date" id="reportEndDate" class="w-full px-3 py-2 border rounded">
+                            </div>
+                        </div>
+                        
+                        <div id="sessionFilters" class="hidden">
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                                <div>
+                                    <label class="block text-sm font-medium mb-1">Paciente:</label>
+                                    <select id="reportPaciente" class="w-full px-3 py-2 border rounded">
+                                        <option value="">Todos</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium mb-1">Médico:</label>
+                                    <select id="reportMedico" class="w-full px-3 py-2 border rounded">
+                                        <option value="">Todos</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium mb-1">Profissional:</label>
+                                    <select id="reportProfissional" class="w-full px-3 py-2 border rounded">
+                                        <option value="">Todos</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                                <div>
+                                    <label class="block text-sm font-medium mb-1">Protocolo:</label>
+                                    <select id="reportProtocolo" class="w-full px-3 py-2 border rounded">
+                                        <option value="">Todos</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium mb-1">Tipo:</label>
+                                    <select id="reportTipo" class="w-full px-3 py-2 border rounded">
+                                        <option value="">Todos</option>
+                                        <option value="Protocolo Inicial">Protocolo Inicial</option>
+                                        <option value="Manutenção">Manutenção</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium mb-1">Procedimento:</label>
+                                    <select id="reportProcedimento" class="w-full px-3 py-2 border rounded">
+                                        <option value="">Todos</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium mb-1">Status:</label>
+                                    <select id="reportStatus" class="w-full px-3 py-2 border rounded">
+                                        <option value="">Todos</option>
+                                        <option value="agendada">Agendada</option>
+                                        <option value="finalizada">Finalizada</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                                <div>
+                                    <label class="block text-sm font-medium mb-1">Com queda?</label>
+                                    <select id="reportQueda" class="w-full px-3 py-2 border rounded">
+                                        <option value="">Todos</option>
+                                        <option value="sim">Sim</option>
+                                        <option value="nao">Não</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium mb-1">Precisa de medicação?</label>
+                                    <select id="reportMedicamentoNecessario" class="w-full px-3 py-2 border rounded">
+                                        <option value="">Todos</option>
+                                        <option value="sim">Sim</option>
+                                        <option value="nao">Não</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium mb-1">Reavaliação agendada?</label>
+                                    <select id="reportReavaliacao" class="w-full px-3 py-2 border rounded">
+                                        <option value="">Todos</option>
+                                        <option value="sim">Sim</option>
+                                        <option value="nao">Não</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="flex space-x-2">
+                            <button onclick="generateReport()" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Gerar Relatório</button>
+                            <button onclick="closeReportForm()" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">Cancelar</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="configContent" class="p-6 hidden">
+                    <h2 class="text-xl font-bold mb-4">Configurações</h2>
+                    
+                    <div class="grid grid-cols-5 gap-4 mb-6">
+                        <button onclick="openConfigModal('medicos')" class="bg-blue-500 text-white p-4 rounded-lg hover:bg-blue-600">
+                            <div class="text-2xl mb-2">👨‍⚕️</div>
+                            <div class="text-sm">Médicos</div>
+                        </button>
+                        <button onclick="openConfigModal('profissionais')" class="bg-green-500 text-white p-4 rounded-lg hover:bg-green-600">
+                            <div class="text-2xl mb-2">👩‍💼</div>
+                            <div class="text-sm">Profissionais</div>
+                        </button>
+                        <button onclick="openConfigModal('procedimentos')" class="bg-cyan-500 text-white p-4 rounded-lg hover:bg-cyan-600">
+                            <div class="text-2xl mb-2">🔧</div>
+                            <div class="text-sm">Procedimentos</div>
+                        </button>
+                        <button onclick="openConfigModal('protocolos')" class="bg-purple-500 text-white p-4 rounded-lg hover:bg-purple-600">
+                            <div class="text-2xl mb-2">📋</div>
+                            <div class="text-sm">Protocolos</div>
+                        </button>
+                        <button onclick="openConfigModal('medicacoes')" class="bg-teal-500 text-white p-4 rounded-lg hover:bg-teal-600">
+                            <div class="text-2xl mb-2">💊</div>
+                            <div class="text-sm">Medicações</div>
+                        </button>
+                    </div>
+                    
+                    <div class="bg-gray-50 p-4 rounded mb-6">
+                        <h3 class="font-bold mb-3">💾 Backup e Restauração</h3>
+                        <div class="flex space-x-2">
+                            <button id="backupBtn" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">📥 Fazer Backup</button>
+                            <button id="restoreBtn" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">📤 Restaurar Dados</button>
+                            <input type="file" id="restoreFile" accept=".json" class="hidden">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="notification" class="fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded shadow-lg hidden no-print">
+        ✅ Sucesso!
+    </div>
+
+    <div id="configModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 no-print">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-lg shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+                <div class="p-4 border-b border-gray-200">
+                    <div class="flex items-center justify-between">
+                        <h2 class="text-xl font-bold" id="modalTitle">Configuração</h2>
+                        <button onclick="closeConfigModal()" class="text-gray-400 hover:text-gray-600 text-2xl">×</button>
+                    </div>
+                </div>
+                <div class="p-4">
+                    <div class="mb-4 p-4 bg-gray-50 rounded">
+                        <h3 class="font-bold mb-2">Adicionar Novo</h3>
+                        <div id="protocolForm" class="hidden space-y-3">
+                            <input type="text" id="protocolName" placeholder="Nome do protocolo" class="w-full px-3 py-2 border rounded" oninput="this.value = capitalizeWords(this.value)">
+                            <input type="number" id="protocolSessions" placeholder="Número de sessões" min="1" class="w-full px-3 py-2 border rounded">
+                            <select id="protocolFrequency" class="w-full px-3 py-2 border rounded">
+                                <option value="">Selecione a frequência</option>
+                                <option value="semanal">Semanal</option>
+                                <option value="quinzenal">Quinzenal</option>
+                                <option value="mensal">Mensal</option>
+                                <option value="mista">Mista</option>
+                            </select>
+                            <div id="mixedFrequencyOptions" class="hidden space-y-2">
+                                <div class="grid grid-cols-3 gap-2">
+                                    <input type="number" id="weeklyCount" placeholder="Semanais" min="0" class="px-3 py-2 border rounded">
+                                    <input type="number" id="biweeklyCount" placeholder="Quinzenais" min="0" class="px-3 py-2 border rounded">
+                                    <input type="number" id="monthlyCount" placeholder="Mensais" min="0" class="px-3 py-2 border rounded">
+                                </div>
+                            </div>
+                            <button onclick="addProtocol()" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 w-full">Adicionar Protocolo</button>
+                        </div>
+                        <div id="medicationForm" class="hidden space-y-3">
+                            <input type="text" id="medicationName" placeholder="Nome da medicação" class="w-full px-3 py-2 border rounded" oninput="this.value = capitalizeWords(this.value)">
+                            <input type="text" id="medicationRef" placeholder="Ref." class="w-full px-3 py-2 border rounded">
+                            <input type="text" id="medicationLote" placeholder="Número do lote" class="w-full px-3 py-2 border rounded">
+                            <input type="date" id="medicationValidade" class="w-full px-3 py-2 border rounded">
+                            <button onclick="addMedication()" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 w-full">Adicionar Medicação</button>
+                        </div>
+                        <div id="regularForm" class="flex space-x-2">
+                            <input type="text" id="newItemInput" placeholder="Nome do item" class="flex-1 px-3 py-2 border rounded" oninput="this.value = capitalizeWords(this.value)">
+                            <button onclick="addConfigItem()" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Adicionar</button>
+                        </div>
+                    </div>
+                    
+                    <div id="configItemsList" class="space-y-2">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="sessionModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 no-print">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-lg shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+                <div class="p-4 border-b border-gray-200">
+                    <div class="flex items-center justify-between">
+                        <h2 class="text-xl font-bold" id="sessionModalTitle">Gerenciar Sessões</h2>
+                        <button onclick="closeSessionModal()" class="text-gray-400 hover:text-gray-600 text-2xl">×</button>
+                    </div>
+                </div>
+                <div class="p-4">
+                    <div id="patientInfo" class="bg-gray-50 p-4 rounded mb-4"></div>
+                    
+                    <div class="flex flex-wrap gap-2 mb-4">
+                        <button id="addSessionBtn" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">+ Sessão Avulsa</button>
+                        <button id="finishTreatmentBtn" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">Finalizar Tratamento</button>
+                        <button id="reopenTreatmentBtn" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 hidden">Reabrir Tratamento</button>
+                        <button onclick="printTreatmentSummary()" class="bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600">🖨️ Imprimir Resumo</button>
+                    </div>
+                    
+                    <div id="sessionsList" class="space-y-3"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="reportModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-lg shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-y-auto">
+                <div class="p-4 border-b border-gray-200 no-print">
+                    <div class="flex items-center justify-between">
+                        <h2 class="text-xl font-bold" id="reportModalTitle">📊 Relatório</h2>
+                        <div class="space-x-2">
+                            <button onclick="printReportContent()" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">🖨️ Imprimir</button>
+                            <button onclick="exportToExcel()" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">📊 Excel</button>
+                            <button onclick="closeReportModal()" class="text-gray-400 hover:text-gray-600 text-2xl">×</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-6">
+                    <div id="modalReportContent"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="reavaliacaoModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 no-print">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-lg shadow-2xl max-w-xl w-full max-h-96 overflow-y-auto">
+                <div class="p-4 border-b">
+                    <div class="flex items-center justify-between">
+                        <h2 class="text-xl font-bold">Pacientes para Reavaliação</h2>
+                        <button onclick="document.getElementById('reavaliacaoModal').classList.add('hidden')" class="text-gray-400 hover:text-gray-600 text-2xl">×</button>
+                    </div>
+                </div>
+                <div class="p-4">
+                    <div id="reavaliacaoList" class="space-y-2"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div id="passwordModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 no-print">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-lg shadow-2xl max-w-sm w-full">
+                <div class="p-4 border-b">
+                    <div class="flex items-center justify-between">
+                        <h2 class="text-xl font-bold">Reabrir Sessão</h2>
+                        <button onclick="document.getElementById('passwordModal').classList.add('hidden')" class="text-gray-400 hover:text-gray-600 text-2xl">×</button>
+                    </div>
+                </div>
+                <div class="p-4">
+                    <p class="text-gray-600 mb-4">Para reabrir esta sessão, digite a senha de administrador.</p>
+                    <input type="password" id="passwordInput" placeholder="Digite a senha..." class="w-full px-3 py-2 border rounded mb-4">
+                    <div class="flex justify-end space-x-2">
+                        <button id="cancelPasswordBtn" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">Cancelar</button>
+                        <button id="confirmPasswordBtn" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Confirmar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // UUID generator
+        function generateUUID() {
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
+        }
+
+        // --- Data Management Class with Firebase ---
+        class DataManager {
+            constructor() {
+                this.db = firebase.firestore();
+                this.data = { 
+                    pacientes: [], 
+                    configData: {
+                        medicos: {}, 
+                        profissionais: {}, 
+                        procedimentos: {}, 
+                        protocolos: {}, 
+                        medicacoes: {}
+                    }
+                };
+                this.unsubscribe = null;
+            }
+
+            async init() {
+                const configSnapshot = await this.db.collection('config').get();
+                configSnapshot.forEach(doc => {
+                    this.data.configData[doc.id] = doc.data().items || {};
+                });
+
+                this.unsubscribe = this.db.collection('pacientes').onSnapshot(snapshot => {
+                    this.data.pacientes = snapshot.docs.map(doc => ({ ...doc.data(), pacienteId: doc.id }));
+                    this.data.pacientes = this.data.pacientes.map(p => this.migratePacienteData(p));
+                    refreshUI();
+                }, err => {
+                    console.error('Erro ao sincronizar dados do Firebase:', err);
+                    showNotification('Erro ao sincronizar dados com o servidor.', true);
+                });
+            }
+
+            stopSync() {
+              if (this.unsubscribe) {
+                this.unsubscribe();
+              }
+            }
+
+            migratePacienteData(paciente) {
+                paciente.cronograma = (paciente.cronograma || []).map(s => {
+                    if (!s.sessionId) s.sessionId = generateUUID();
+                    if (s.status === 'realizada' || s.status === 'chegada') s.status = 'finalizada';
+                    if (s.medicamento_necessario === undefined) s.medicamento_necessario = '';
+                    if (s.medicamento_descricao === undefined) s.medicamento_descricao = '';
+                    if (s.queda_presente === undefined) s.queda_presente = '';
+                    if (s.queda_intensidade === undefined) s.queda_intensidade = '';
+                    if (s.estadoCabelo === undefined) s.estadoCabelo = '';
+                    if (s.medicacoes === undefined) s.medicacoes = [];
+                    return s;
+                });
+                return paciente;
+            }
+
+            async addPaciente(paciente) {
+                const newDocRef = this.db.collection('pacientes').doc();
+                await newDocRef.set({ ...paciente, pacienteId: newDocRef.id });
+                showNotification('Paciente cadastrado no Firebase!');
+            }
+
+            async deletePaciente(pacienteId) {
+                await this.db.collection('pacientes').doc(pacienteId).delete();
+                showNotification('Paciente excluído!');
+            }
+
+            async addConfigItem(type, item) {
+                const id = generateUUID();
+                const newItems = { ...this.data.configData[type], [id]: { ...item, id } };
+                await this.db.collection('config').doc(type).set({ items: newItems });
+                showNotification('Item adicionado!');
+            }
+
+            async deleteConfigItem(type, id) {
+                const newItems = { ...this.data.configData[type] };
+                delete newItems[id];
+                await this.db.collection('config').doc(type).set({ items: newItems });
+                showNotification('Item excluído!');
+            }
+
+            async updateSession(pacienteId, sessionId, field, value) {
+                const paciente = this.getPacienteById(pacienteId);
+                if (!paciente) return;
+                const session = paciente.cronograma.find(s => s.sessionId === sessionId);
+                if (!session) return;
+                session[field] = value;
+                await this.db.collection('pacientes').doc(pacienteId).update({ cronograma: paciente.cronograma });
+            }
+
+            async addSession(pacienteId, sessionData) {
+                const paciente = this.getPacienteById(pacienteId);
+                if (!paciente) return;
+                
+                paciente.cronograma.push({ ...sessionData, sessionId: generateUUID() });
+                paciente.totalSessoes++;
+                await this.db.collection('pacientes').doc(pacienteId).update({ 
+                    cronograma: paciente.cronograma,
+                    totalSessoes: paciente.totalSessoes
+                });
+                showNotification('Sessão avulsa adicionada!');
+            }
+
+            async updatePatientStatus(pacienteId, newStatus, dataReavaliacao = null) {
+                const paciente = this.getPacienteById(pacienteId);
+                if (!paciente) return;
+
+                const updateData = { status: newStatus };
+                if (newStatus === 'finalizado') {
+                    const lastSession = paciente.cronograma.find(s => s.status === 'finalizada');
+                    if (lastSession) {
+                        updateData.dataUltimaSessao = lastSession.data;
+                    }
+                    updateData.dataReavaliacao = dataReavaliacao;
+                } else if (newStatus === 'ativo') {
+                    updateData.dataReavaliacao = null;
+                    updateData.dataUltimaSessao = null;
+                }
+                
+                await this.db.collection('pacientes').doc(pacienteId).update(updateData);
+            }
+
+            getPacientes() { return this.data.pacientes; }
+            getConfigData() { return this.data.configData; }
+            getPacienteById(id) { return this.data.pacientes.find(p => p.pacienteId === id); }
+            getSessionById(pacienteId, sessionId) {
+                const paciente = this.getPacienteById(pacienteId);
+                return paciente ? paciente.cronograma.find(s => s.sessionId === sessionId) : null;
+            }
+            getConfigItem(type, id) {
+                const item = this.data.configData[type] ? this.data.configData[type][id] : null;
+                return item ? { id: item.id, nome: item.nome, displayName: item.displayName, ...item } : null;
+            }
+            getConfigArray(type) {
+                return Object.values(this.data.configData[type] || {}).sort((a, b) => {
+                    const aName = a.nome || a.displayName || '';
+                    const bName = b.nome || b.displayName || '';
+                    return aName.localeCompare(bName, 'pt-BR');
+                });
+            }
+        }
+
+        const dataManager = new DataManager();
+        let currentWeekStart = new Date();
+        let currentConfigType = '';
+        let currentPatientId = null;
+        let currentPage = 1;
+        let itemsPerPage = 10;
+        let filteredPacientes = [];
+
+        // Set current week to start of week (Sunday)
+        currentWeekStart.setDate(currentWeekStart.getDate() - currentWeekStart.getDay());
+
+        // Login/Logout Functions
+        async function login() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            const errorElement = document.getElementById('loginError');
+            errorElement.classList.add('hidden');
+
+            try {
+                await auth.signInWithEmailAndPassword(email, password);
+            } catch (error) {
+                errorElement.textContent = 'Erro ao fazer login. Verifique seu email e senha.';
+                errorElement.classList.remove('hidden');
+            }
+        }
+
+        function logout() {
+            auth.signOut();
+        }
+
+        // --- UI Update & Rendering Logic ---
+        function refreshUI() {
+            renderPacientes();
+            renderCalendar();
+            updateStats();
+            updateDropdowns();
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('[id$="Content"]').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('[id$="Tab"]').forEach(el => {
+                el.className = 'px-6 py-3 bg-gray-200 text-gray-700';
+            });
+            document.getElementById(tabName + 'Content').classList.remove('hidden');
+            document.getElementById(tabName + 'Tab').className = 'px-6 py-3 bg-blue-500 text-white';
+        }
+
+        function renderCalendar() {
+            const weekEnd = new Date(currentWeekStart);
+            weekEnd.setDate(weekEnd.getDate() + 6);
+            
+            document.getElementById('weekRange').textContent = 
+                `${currentWeekStart.toLocaleDateString('pt-BR')} - ${weekEnd.toLocaleDateString('pt-BR')}`;
+            
+            const calendarDays = document.getElementById('calendarDays');
+            calendarDays.innerHTML = '';
+            
+            const allSessions = dataManager.getPacientes().flatMap(p => 
+                p.cronograma.map(s => ({ ...s, pacienteId: p.pacienteId, pacienteNome: p.nome }))
+            );
+
+            const todayStr = new Date().toISOString().split('T')[0];
+
+            for (let i = 0; i < 7; i++) {
+                const day = new Date(currentWeekStart);
+                day.setDate(day.getDate() + i);
+                const dayStr = day.toISOString().split('T')[0];
+                const daySessions = allSessions.filter(s => s.data === dayStr).sort((a,b) => (a.horario || '').localeCompare(b.horario || ''));
+                
+                const isToday = dayStr === todayStr;
+                const dayClasses = `
+                    relative min-h-[120px] p-2 rounded-lg transition-all duration-200
+                    ${isToday ? 'bg-blue-100 border-2 border-blue-500 shadow-lg' : 'bg-gray-50 border border-gray-200 hover:bg-gray-100'}
+                `;
+
+                const dayDiv = document.createElement('div');
+                dayDiv.className = dayClasses;
+                
+                let dayContent = `
+                    <div class="font-bold text-sm mb-2 text-center text-gray-800">${day.getDate()}</div>
+                `;
+                
+                daySessions.forEach(session => {
+                    const statusColorClass = {
+                        'agendada': 'bg-blue-200 text-blue-800',
+                        'finalizada': 'bg-green-200 text-green-800',
+                        'reavaliacao': 'bg-red-200 text-red-800'
+                    }[session.status] || 'bg-gray-200 text-gray-800';
+                    
+                    const procedimento = dataManager.getConfigItem('procedimentos', session.procedimento)?.nome || 'Sem procedimento';
+                    
+                    dayContent += `
+                        <div class="text-xs p-1 mb-1 rounded-md cursor-pointer hover:opacity-80 transition-opacity ${statusColorClass}" 
+                            title="${session.pacienteNome} - ${session.horario || 'Sem horário'} - ${procedimento}"
+                            onclick="openSessionModal('${session.pacienteId}')">
+                            <span class="font-semibold">${session.horario || 'S/H'}</span> -
+                            <span>${session.pacienteNome.split(' ')[0]}</span><br>
+                            <span class="text-[10px] opacity-80">${procedimento}</span>
+                        </div>
+                    `;
+                });
+                
+                dayDiv.innerHTML = dayContent;
+                calendarDays.appendChild(dayDiv);
+            }
+        }
+        
+        function renderPacientes() {
+            const container = document.getElementById('listaPacientes');
+            container.innerHTML = '';
+
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const dateFilterStart = document.getElementById('dateFilterStart').value;
+            const dateFilterEnd = document.getElementById('dateFilterEnd').value;
+            const statusFilter = document.getElementById('statusFilter').value;
+            
+            filteredPacientes = dataManager.getPacientes().filter(paciente => {
+                const matchesName = paciente.nome.toLowerCase().includes(searchTerm);
+                
+                if (!dateFilterStart && !dateFilterEnd && (statusFilter === 'todas' || !statusFilter)) {
+                    return matchesName;
+                }
+                
+                const hasMatchingSession = (paciente.cronograma || []).some(sessao => {
+                    const sessionDate = sessao.data;
+                    const matchesDateRange = (!dateFilterStart || sessionDate >= dateFilterStart) && 
+                                             (!dateFilterEnd || sessionDate <= dateFilterEnd);
+                    const matchesStatus = statusFilter === 'todas' || sessao.status === statusFilter;
+                    
+                    return matchesDateRange && matchesStatus;
+                });
+                
+                return matchesName && hasMatchingSession;
+            });
+
+            const totalPages = Math.ceil(filteredPacientes.length / itemsPerPage);
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const paginatedPacientes = filteredPacientes.slice(startIndex, endIndex);
+
+            paginatedPacientes.forEach(paciente => {
+                const finalizadas = (paciente.cronograma || []).filter(s => s.status === 'finalizada').length;
+                const progress = Math.round((finalizadas / paciente.totalSessoes) * 100) || 0;
+                const statusColor = paciente.status === 'finalizado' ? 'bg-gray-100' : 'bg-white';
+                const protocolo = dataManager.getConfigItem('protocolos', paciente.protocolo)?.nome || 'N/A';
+                const medico = dataManager.getConfigItem('medicos', paciente.medico)?.nome || 'N/A';
+
+                const sessionsLeft = paciente.totalSessoes - finalizadas;
+                const warningAlert = sessionsLeft === 1 && paciente.status !== 'finalizado' ? 
+                    '<div class="bg-orange-100 border border-orange-400 text-orange-700 px-3 py-2 rounded text-sm mt-2">⚠️ Falta apenas 1 sessão para finalizar o tratamento!</div>' : '';
+
+                const isReavaliacaoNeeded = paciente.status === 'finalizado' && !paciente.dataReavaliacao;
+                const reavaliacaoAlert = isReavaliacaoNeeded ? `
+                    <div class="mt-2 bg-red-100 border border-red-400 text-red-700 px-3 py-2 rounded text-sm">
+                        <p class="font-semibold">🚨 Reavaliação Pendente!</p>
+                        <p>Última sessão: ${paciente.dataUltimaSessao ? new Date(paciente.dataUltimaSessao + 'T00:00:00').toLocaleDateString('pt-BR') : 'N/A'}</p>
+                        <p>Agendar para:</p>
+                        <input type="date" value="" onchange="updateReavaliacaoDate('${paciente.pacienteId}', this.value)" class="mt-1 px-2 py-1 border rounded text-xs text-black w-full">
+                    </div>
+                ` : '';
+
+                const reavaliacaoAgendadaAlert = paciente.status === 'finalizado' && paciente.dataReavaliacao ? `
+                    <div class="mt-2 bg-yellow-100 border border-yellow-400 text-yellow-700 px-3 py-2 rounded text-sm">
+                        <p class="font-semibold">📅 Reavaliação agendada para: ${new Date(paciente.dataReavaliacao + 'T00:00:00').toLocaleDateString('pt-BR')}</p>
+                        <p>Alterar data:</p>
+                        <input type="date" value="${paciente.dataReavaliacao}" onchange="updateReavaliacaoDate('${paciente.pacienteId}', this.value)" class="mt-1 px-2 py-1 border rounded text-xs text-black w-full">
+                    </div>
+                ` : '';
+                
+                const div = document.createElement('div');
+                div.className = `${statusColor} border rounded-lg p-4 paciente-item`;
+                div.innerHTML = `
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h3 class="font-bold paciente-nome">${paciente.nome} ${paciente.status === 'finalizado' ? '(Finalizado)' : ''}</h3>
+                            <p class="text-sm text-gray-600">${medico} • ${paciente.tipo}</p>
+                            <p class="text-sm text-gray-500">Protocolo: ${protocolo} | Progresso: ${finalizadas}/${paciente.totalSessoes} (${progress}%)</p>
+                        </div>
+                        <div class="space-x-2">
+                            <button onclick="openSessionModal('${paciente.pacienteId}')" class="bg-blue-500 text-white px-3 py-1 rounded text-sm">Gerenciar Sessões</button>
+                            <button onclick="deletePaciente('${paciente.pacienteId}')" class="bg-red-500 text-white px-3 py-1 rounded text-sm">Excluir</button>
+                        </div>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2 mt-2">
+                        <div class="bg-blue-500 h-2 rounded-full" style="width: ${progress}%"></div>
+                    </div>
+                    ${warningAlert}
+                    ${reavaliacaoAlert}
+                    ${reavaliacaoAgendadaAlert}
+                `;
+                container.appendChild(div);
+            });
+
+            document.getElementById('pageInfo').textContent = `Página ${currentPage} de ${totalPages || 1}`;
+            document.getElementById('prevPage').disabled = currentPage === 1;
+            document.getElementById('nextPage').disabled = currentPage === totalPages || totalPages === 0;
+        }
+
+        function updateDropdowns() {
+            const dropdowns = [
+                { id: 'medicoInput', data: dataManager.getConfigArray('medicos'), placeholder: 'Selecione o médico' },
+                { id: 'protocoloInput', data: dataManager.getConfigArray('protocolos'), placeholder: 'Selecione o protocolo' }
+            ];
+
+            dropdowns.forEach(({ id, data, placeholder }) => {
+                const select = document.getElementById(id);
+                if (select) {
+                    select.innerHTML = `<option value="">${placeholder}</option>` + 
+                        data.map(item => `<option value="${item.id}">${item.nome}</option>`).join('');
+                }
+            });
+        }
+
+        // --- Event Handlers & Modal Logic ---
+        document.getElementById('pacientesTab').onclick = () => switchTab('pacientes');
+        document.getElementById('relatoriosTab').onclick = () => switchTab('relatorios');
+        document.getElementById('configTab').onclick = () => switchTab('config');
+
+        document.getElementById('prevWeek').onclick = () => { 
+            currentWeekStart.setDate(currentWeekStart.getDate() - 7); 
+            refreshUI(); 
+        };
+        document.getElementById('nextWeek').onclick = () => { 
+            currentWeekStart.setDate(currentWeekStart.getDate() + 7); 
+            refreshUI(); 
+        };
+        document.getElementById('currentWeek').onclick = () => { 
+            currentWeekStart = new Date(); 
+            currentWeekStart.setDate(currentWeekStart.getDate() - currentWeekStart.getDay()); 
+            refreshUI(); 
+        };
+
+        document.getElementById('novoPacienteBtn').onclick = () => { document.getElementById('novoPacienteForm').classList.toggle('hidden'); };
+        document.getElementById('cancelarPaciente').onclick = () => { document.getElementById('novoPacienteForm').classList.add('hidden'); clearForm(); };
+        document.getElementById('procurarPacienteBtn').onclick = () => { document.getElementById('procurarPacienteForm').classList.toggle('hidden'); };
+
+        document.getElementById('searchInput').oninput = refreshUI;
+        document.getElementById('dateFilterStart').onchange = refreshUI;
+        document.getElementById('dateFilterEnd').onchange = refreshUI;
+        document.getElementById('statusFilter').onchange = refreshUI;
+        document.getElementById('limparBusca').onclick = () => {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('dateFilterStart').value = '';
+            document.getElementById('dateFilterEnd').value = '';
+            document.getElementById('statusFilter').value = 'todas';
+            currentPage = 1;
+            refreshUI();
+        };
+        
+        document.getElementById('prevPage').onclick = () => { if (currentPage > 1) { currentPage--; refreshUI(); } };
+        document.getElementById('nextPage').onclick = () => { 
+            const totalPages = Math.ceil(filteredPacientes.length / itemsPerPage);
+            if (currentPage < totalPages) { currentPage++; refreshUI(); }
+        };
+
+        document.getElementById('salvarPaciente').onclick = async () => {
+            const nome = document.getElementById('nomeInput').value.trim();
+            const medicoId = document.getElementById('medicoInput').value;
+            const protocoloId = document.getElementById('protocoloInput').value;
+            const tipo = document.getElementById('tipoInput').value;
+            const inicio = document.getElementById('inicioInput').value;
+
+            if (!nome || !medicoId || !protocoloId || !tipo || !inicio) {
+                showNotification('Preencha todos os campos!', true);
+                return;
+            }
+
+            const protocolo = dataManager.getConfigItem('protocolos', protocoloId);
+            if (!protocolo) {
+                showNotification('Protocolo não encontrado!', true);
+                return;
+            }
+            const cronograma = generateSchedule(inicio, protocolo);
+
+            await dataManager.addPaciente({
+                nome, medico: medicoId, protocolo: protocoloId, tipo, inicio, cronograma,
+                totalSessoes: protocolo.sessoes,
+                status: 'ativo'
+            });
+            
+            document.getElementById('novoPacienteForm').classList.add('hidden');
+            clearForm();
+        };
+
+        async function deletePaciente(pacienteId) {
+            if (confirm('Excluir este paciente?')) {
+                await dataManager.deletePaciente(pacienteId);
+            }
+        }
+
+        function openSessionModal(pacienteId) {
+            currentPatientId = pacienteId;
+            const paciente = dataManager.getPacienteById(pacienteId);
+            if (!paciente) { showNotification('Paciente não encontrado!', true); return; }
+            
+            const finalizadas = (paciente.cronograma || []).filter(s => s.status === 'finalizada').length;
+            const progress = Math.round((finalizadas / paciente.totalSessoes) * 100) || 0;
+            const protocolo = dataManager.getConfigItem('protocolos', paciente.protocolo)?.nome || 'N/A';
+            const medico = dataManager.getConfigItem('medicos', paciente.medico)?.nome || 'N/A';
+
+            document.getElementById('sessionModalTitle').textContent = `Sessões - ${paciente.nome}`;
+            document.getElementById('patientInfo').innerHTML = `
+                <h3 class="font-bold">${paciente.nome}</h3>
+                <p class="text-sm text-gray-600">${medico} • ${paciente.tipo} • ${protocolo}</p>
+                <p class="text-sm">Progresso: ${finalizadas}/${paciente.totalSessoes} sessões finalizadas (${progress}%) • Status: ${paciente.status || 'ativo'}</p>
+            `;
+            
+            document.getElementById('finishTreatmentBtn').classList.toggle('hidden', paciente.status === 'finalizado');
+            document.getElementById('reopenTreatmentBtn').classList.toggle('hidden', paciente.status !== 'finalizado');
+            
+            renderSessionsList();
+            document.getElementById('sessionModal').classList.remove('hidden');
+        }
+
+        function closeSessionModal() {
+            document.getElementById('sessionModal').classList.add('hidden');
+            currentPatientId = null;
+            refreshUI();
+        }
+
+        function renderSessionsList() {
+            const container = document.getElementById('sessionsList');
+            container.innerHTML = '';
+            const paciente = dataManager.getPacienteById(currentPatientId);
+            if (!paciente) return;
+            
+            const timeSlots = [];
+            for (let hour = 8; hour < 20; hour++) {
+                timeSlots.push(`${hour.toString().padStart(2, '0')}:00`);
+                if (hour < 19) { timeSlots.push(`${hour.toString().padStart(2, '0')}:30`); }
+            }
+            const professionalOptions = dataManager.getConfigArray('profissionais').map(p => `<option value="${p.id}">${p.nome}</option>`).join('');
+            const procedimentoOptions = dataManager.getConfigArray('procedimentos').map(p => `<option value="${p.id}">${p.nome}</option>`).join('');
+            const medicationOptions = dataManager.getConfigArray('medicacoes').map(m => `<option value="${m.id}">${m.displayName || m.nome}</option>`).join('');
+
+            (paciente.cronograma || []).forEach(sessao => {
+                const sessionHtml = createSessionHtml(paciente, sessao, timeSlots, professionalOptions, procedimentoOptions, medicationOptions);
+                container.appendChild(sessionHtml);
+            });
+        }
+        
+        function createSessionHtml(paciente, sessao, timeSlots, professionalOptions, procedimentoOptions, medicationOptions) {
+            const div = document.createElement('div');
+            div.className = 'bg-gray-50 border rounded p-4';
+            const isFinalizada = sessao.status === 'finalizada';
+            const isFinalized = paciente.status === 'finalizado';
+            const isReadOnly = isFinalizada || isFinalized; 
+            
+            const statusColors = { 'agendada': '#2563eb', 'finalizada': '#16a34a', 'reavaliacao': '#dc2626' };
+            
+            const requiredFieldsFilled = [sessao.data, sessao.horario, sessao.profissional, sessao.procedimento].every(field => field);
+            const isMedNecessarioSim = sessao.medicamento_necessario === 'sim';
+            const requiredMedicationFilled = !isMedNecessarioSim || (isMedNecessarioSim && sessao.medicamento_descricao && sessao.medicamento_descricao.trim() !== '');
+
+            const canEncerrarSession = !isFinalizada && !isFinalized && requiredFieldsFilled && requiredMedicationFilled;
+
+            let medicationsHtml = '';
+            const hasMedications = (sessao.medicacoes && sessao.medicacoes.length > 0);
+            
+            const isMedicationSectionReadOnly = isFinalizada || isFinalized;
+
+            if (isMedicationSectionReadOnly) {
+                 medicationsHtml = `
+                     <div class="mb-4">
+                         <label class="block text-sm font-medium mb-2">Medicações:</label>
+                         <div class="space-y-1">
+                             ${(sessao.medicacoes || []).map(medRef => {
+                                 const med = dataManager.getConfigItem('medicacoes', medRef.medicationId);
+                                 const displayName = med ? (med.displayName || med.nome) : 'Medicação desconhecida';
+                                 return `
+                                     <div class="bg-blue-50 px-2 py-1 rounded text-sm">
+                                         <span>${displayName} - Qtd: ${medRef.quantidade || 'N/A'}</span>
+                                     </div>
+                                 `;
+                             }).join('')}
+                         </div>
+                     </div>
+                 `;
+            } else {
+                medicationsHtml = `
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium mb-2">Medicações:</label>
+                        <div class="flex items-center gap-2 mb-2">
+                            <select id="medSelect-${sessao.sessionId}" class="flex-1 px-2 py-1 border rounded">
+                                <option value="">Selecione a medicação</option>
+                                ${medicationOptions}
+                            </select>
+                            <input type="number" id="medQuantity-${sessao.sessionId}" placeholder="Qtd" min="1" class="w-16 px-2 py-1 border rounded">
+                            <button onclick="addMedicationToSession('${sessao.sessionId}')" class="bg-green-500 text-white px-3 py-1 rounded text-sm hover:bg-green-600">Adicionar</button>
+                        </div>
+                        
+                        <div class="space-y-1">
+                            ${(sessao.medicacoes || []).map(medRef => {
+                                const med = dataManager.getConfigItem('medicacoes', medRef.medicationId);
+                                const displayName = med ? (med.displayName || med.nome) : 'Medicação desconhecida';
+                                return `
+                                    <div class="flex justify-between items-center bg-blue-50 px-2 py-1 rounded text-sm">
+                                        <span>${displayName} - Qtd: ${medRef.quantidade || 'N/A'}</span>
+                                        <button onclick="removeMedicationFromSession('${sessao.sessionId}', '${medRef.medicationId}')" class="text-red-500 hover:text-red-700 text-xs">✕</button>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+            
+            const medicamentoDescricaoHidden = sessao.medicamento_necessario === 'sim' ? '' : 'hidden';
+
+            const encerrarBtnHtml = canEncerrarSession
+                ? `<button onclick="encerrarSession('${sessao.sessionId}')" class="px-3 py-1 rounded text-sm text-white bg-blue-500 hover:bg-blue-600">Encerrar Sessão</button>`
+                : `<button disabled class="px-3 py-1 rounded text-sm text-white bg-gray-400 cursor-not-allowed" title="Preencha todos os campos obrigatórios para encerrar a sessão.">Encerrar Sessão</button>`;
+
+            div.innerHTML = `
+                <div class="mb-3">
+                    <h4 class="font-bold text-lg">Sessão ${paciente.cronograma.indexOf(sessao) + 1} ${isFinalizada ? '✅' : ''}</h4>
+                    ${isFinalizada ? '<p class="text-sm text-green-600 font-medium">Sessão finalizada.</p>' : ''}
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Data:</label>
+                        <input type="date" value="${sessao.data}" onchange="updateSession('${sessao.sessionId}', 'data', this.value)" class="px-2 py-1 border rounded w-full ${isReadOnly ? 'bg-gray-100' : ''}" ${isReadOnly ? 'disabled' : ''}>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Hora:</label>
+                        <select onchange="updateSession('${sessao.sessionId}', 'horario', this.value)" class="px-2 py-1 border rounded w-full ${isReadOnly ? 'bg-gray-100' : ''}" ${isReadOnly ? 'disabled' : ''}>
+                            <option value="">Selecione</option>
+                            ${timeSlots.map(time => `<option value="${time}" ${sessao.horario === time ? 'selected' : ''}>${time}</option>`).join('')}
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Profissional:</label>
+                        <select onchange="updateSession('${sessao.sessionId}', 'profissional', this.value)" class="px-2 py-1 border rounded w-full ${isReadOnly ? 'bg-gray-100' : ''}" ${isReadOnly ? 'disabled' : ''}>
+                            <option value="">Selecione</option>
+                            ${professionalOptions.replace(`value="${sessao.profissional}"`, `value="${sessao.profissional}" selected`)}
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Procedimento:</label>
+                        <select onchange="updateSession('${sessao.sessionId}', 'procedimento', this.value)" class="px-2 py-1 border rounded w-full ${isReadOnly ? 'bg-gray-100' : ''}" ${isReadOnly ? 'disabled' : ''}>
+                            <option value="">Selecione</option>
+                            ${procedimentoOptions.replace(`value="${sessao.procedimento}"`, `value="${sessao.procedimento}" selected`)}
+                        </select>
+                    </div>
+                    
+                    <div class="col-span-1">
+                        <label class="block text-sm font-medium mb-1">Status:</label>
+                        <span class="px-2 py-1 border rounded w-full status-text" style="color: ${statusColors[sessao.status] || '#000'};">
+                            ${sessao.status === 'agendada' ? '🔵 Agendada' : sessao.status === 'finalizada' ? '🟢 Finalizada' : '🔴 Reavaliação'}
+                        </span>
+                    </div>
+                </div>
+                
+                ${medicationsHtml}
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div class="col-span-1">
+                        <label class="block text-sm font-medium mb-1">Precisa de medicação?</label>
+                        <select id="medicamentoNecessario-${sessao.sessionId}" onchange="updateMedicamentoDropdowns('${sessao.sessionId}')" class="px-2 py-1 border rounded w-full ${isReadOnly ? 'bg-gray-100' : ''}" ${isReadOnly ? 'disabled' : ''}>
+                            <option value="">Selecione</option>
+                            <option value="sim" ${sessao.medicamento_necessario === 'sim' ? 'selected' : ''}>Sim</option>
+                            <option value="nao" ${sessao.medicamento_necessario === 'nao' ? 'selected' : ''}>Não</option>
+                        </select>
+                    </div>
+                    <div id="medicamentoDescricaoDiv-${sessao.sessionId}" class="col-span-1 ${sessao.medicamento_necessario === 'sim' ? '' : 'hidden'}">
+                        <label class="block text-sm font-medium mb-1">Descrição do medicamento:</label>
+                        <textarea id="medicamentoDescricao-${sessao.sessionId}" onchange="updateSession('${sessao.sessionId}', 'medicamento_descricao', this.value)" rows="1" class="px-2 py-1 border rounded w-full ${isReadOnly ? 'bg-gray-100' : ''}" ${isReadOnly ? 'disabled' : ''}>${sessao.medicamento_descricao || ''}</textarea>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Está com queda?</label>
+                        <select id="quedaPresente-${sessao.sessionId}" onchange="updateQuedaDropdowns('${sessao.sessionId}')" class="px-2 py-1 border rounded w-full ${isReadOnly ? 'bg-gray-100' : ''}" ${isReadOnly ? 'disabled' : ''}>
+                            <option value="">Selecione</option>
+                            <option value="sim" ${sessao.queda_presente === 'sim' ? 'selected' : ''}>Sim</option>
+                            <option value="nao" ${sessao.queda_presente === 'nao' ? 'selected' : ''}>Não</option>
+                        </select>
+                    </div>
+                    <div id="quedaIntensidadeDiv-${sessao.sessionId}" class="col-span-1 ${sessao.queda_presente === 'sim' ? '' : 'hidden'}">
+                        <label class="block text-sm font-medium mb-1">Queda do cabelo está:</label>
+                        <select onchange="updateSession('${sessao.sessionId}', 'queda_intensidade', this.value)" class="px-2 py-1 border rounded w-full ${isReadOnly ? 'bg-gray-100' : ''}" ${isReadOnly ? 'disabled' : ''}>
+                            <option value="">Selecione</option>
+                            <option value="excessiva" ${sessao.queda_intensidade === 'excessiva' ? 'selected' : ''}>Excessiva</option>
+                            <option value="moderada" ${sessao.queda_intensidade === 'moderada' ? 'selected' : ''}>Moderada</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Seu cabelo está:</label>
+                        <select onchange="updateSession('${sessao.sessionId}', 'estadoCabelo', this.value)" class="px-2 py-1 border rounded w-full ${isReadOnly ? 'bg-gray-100' : ''}" ${isReadOnly ? 'disabled' : ''}>
+                            <option value="">Selecione</option>
+                            <option value="normal" ${sessao.estadoCabelo === 'normal' ? 'selected' : ''}>Normal</option>
+                            <option value="seco" ${sessao.estadoCabelo === 'seco' ? 'selected' : ''}>Seco</option>
+                            <option value="oleoso" ${sessao.estadoCabelo === 'oleoso' ? 'selected' : ''}>Oleoso</option>
+                            <option value="descamando" ${sessao.estadoCabelo === 'descamando' ? 'selected' : ''}>Descamando</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="flex justify-end space-x-2">
+                    ${!isFinalizada && !isFinalized ? encerrarBtnHtml : ''}
+                    ${isFinalizada && !isFinalized ? `
+                    <button onclick="reabrirSessionWithPassword('${sessao.sessionId}')" class="bg-blue-800 text-white px-3 py-1 rounded text-sm hover:bg-blue-900">Reabrir</button>
+                    ` : ''}
+                    ${isFinalizada || isFinalized ? '' : `
+                    <button onclick="deleteSession('${sessao.sessionId}')" class="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600">Excluir Sessão</button>
+                    `}
+                </div>
+            `;
+            return div;
+        }
+
+        function isQuedaPresente(sessao) {
+            return sessao.queda_presente === 'sim';
+        }
+
+        async function updateQuedaDropdowns(sessionId) {
+            const quedaPresenteSelect = document.getElementById(`quedaPresente-${sessionId}`);
+            const quedaIntensidadeDiv = document.getElementById(`quedaIntensidadeDiv-${sessionId}`);
+            const session = dataManager.getSessionById(currentPatientId, sessionId);
+            if (!session) return;
+            
+            session.queda_presente = quedaPresenteSelect.value;
+            if (quedaPresenteSelect.value === 'sim') {
+                quedaIntensidadeDiv.classList.remove('hidden');
+            } else {
+                quedaIntensidadeDiv.classList.add('hidden');
+                session.queda_intensidade = '';
+            }
+            await dataManager.updateSession(currentPatientId, sessionId, 'queda_presente', session.queda_presente);
+            await dataManager.updateSession(currentPatientId, sessionId, 'queda_intensidade', session.queda_intensidade);
+            renderSessionsList();
+        }
+
+        async function updateMedicamentoDropdowns(sessionId) {
+            const medicamentoNecessarioSelect = document.getElementById(`medicamentoNecessario-${sessionId}`);
+            const medicamentoDescricaoDiv = document.getElementById(`medicamentoDescricaoDiv-${sessionId}`);
+            const session = dataManager.getSessionById(currentPatientId, sessionId);
+            if (!session) return;
+            
+            session.medicamento_necessario = medicamentoNecessarioSelect.value;
+            if (medicamentoNecessarioSelect.value === 'sim') {
+                medicamentoDescricaoDiv.classList.remove('hidden');
+            } else {
+                medicamentoDescricaoDiv.classList.add('hidden');
+                session.medicamento_descricao = '';
+            }
+            await dataManager.updateSession(currentPatientId, sessionId, 'medicamento_necessario', session.medicamento_necessario);
+            await dataManager.updateSession(currentPatientId, sessionId, 'medicamento_descricao', session.medicamento_descricao);
+            renderSessionsList();
+        }
+        
+        async function encerrarSession(sessionId) {
+            const paciente = dataManager.getPacienteById(currentPatientId);
+            if (!paciente) return;
+            const session = paciente.cronograma.find(s => s.sessionId === sessionId);
+            if (!session) return;
+            
+            if (confirm('Tem certeza que deseja encerrar esta sessão?')) {
+                await dataManager.updateSession(currentPatientId, sessionId, 'status', 'finalizada');
+                renderSessionsList();
+                showNotification('Sessão encerrada!');
+            }
+        }
+        
+        async function reabrirSessionWithPassword(sessionId) {
+            const passwordModal = document.getElementById('passwordModal');
+            const passwordInput = document.getElementById('passwordInput');
+            const confirmPasswordBtn = document.getElementById('confirmPasswordBtn');
+            
+            passwordInput.value = '';
+            passwordModal.classList.remove('hidden');
+            
+            const handleConfirm = async () => {
+                const password = passwordInput.value;
+                const correctPassword = '1970';
+            
+                if (password === correctPassword) {
+                    const paciente = dataManager.getPacienteById(currentPatientId);
+                    const session = paciente.cronograma.find(s => s.sessionId === sessionId);
+                    if (session) {
+                        await dataManager.updateSession(currentPatientId, sessionId, 'status', 'agendada');
+                        renderSessionsList();
+                        showNotification('Sessão reaberta com sucesso!');
+                    }
+                    passwordModal.classList.add('hidden');
+                    confirmPasswordBtn.removeEventListener('click', handleConfirm);
+                } else {
+                    showNotification('Senha incorreta!', true);
+                    passwordInput.value = '';
+                }
+            };
+            
+            confirmPasswordBtn.addEventListener('click', handleConfirm);
+            document.getElementById('cancelPasswordBtn').onclick = () => {
+                passwordModal.classList.add('hidden');
+                confirmPasswordBtn.removeEventListener('click', handleConfirm);
+            };
+        }
+
+        async function updateReavaliacaoDate(pacienteId, newDate) {
+            const paciente = dataManager.getPacienteById(pacienteId);
+            if (paciente) {
+                await dataManager.updatePatientStatus(pacienteId, 'finalizado', newDate);
+                showNotification(`Reavaliação agendada para ${new Date(newDate + 'T00:00:00').toLocaleDateString('pt-BR')}.`);
+            }
+        }
+
+        async function updateSession(sessionId, field, value) {
+            const session = dataManager.getSessionById(currentPatientId, sessionId);
+            if (!session) return;
+            
+            const isTreatmentFinalized = dataManager.getPacienteById(currentPatientId).status === 'finalizado';
+            const isSessionFinalizada = session.status === 'finalizada';
+
+            if (isSessionFinalizada || isTreatmentFinalized) {
+                showNotification('Não é possível editar esta sessão. Reabra o tratamento para fazer alterações.', true);
+                renderSessionsList();
+                return;
+            }
+            
+            await dataManager.updateSession(currentPatientId, sessionId, field, value);
+            renderSessionsList();
+        }
+
+        async function addMedicationToSession(sessionId) {
+            const medSelect = document.getElementById(`medSelect-${sessionId}`);
+            const quantityInput = document.getElementById(`medQuantity-${sessionId}`);
+            
+            const medicationId = medSelect.value;
+            const quantity = parseInt(quantityInput.value);
+            
+            if (!medicationId || isNaN(quantity) || quantity <= 0) {
+                showNotification('Selecione uma medicação e digite uma quantidade válida!', true);
+                return;
+            }
+            
+            const paciente = dataManager.getPacienteById(currentPatientId);
+            const session = paciente.cronograma.find(s => s.sessionId === sessionId);
+            if (!session) return;
+            
+            if (!session.medicacoes) { session.medicacoes = []; }
+            if (session.medicacoes.some(m => m.medicationId === medicationId)) {
+                showNotification('Esta medicação já foi adicionada!', true);
+                return;
+            }
+            
+            session.medicacoes.push({ medicationId, quantidade: quantity });
+            await dataManager.db.collection('pacientes').doc(currentPatientId).update({ cronograma: paciente.cronograma });
+            renderSessionsList();
+        }
+
+        async function removeMedicationFromSession(sessionId, medicationId) {
+            const paciente = dataManager.getPacienteById(currentPatientId);
+            const session = paciente.cronograma.find(s => s.sessionId === sessionId);
+            if (!session) return;
+            
+            session.medicacoes = session.medicacoes.filter(m => m.medicationId !== medicationId);
+            await dataManager.db.collection('pacientes').doc(currentPatientId).update({ cronograma: paciente.cronograma });
+            renderSessionsList();
+        }
+
+        async function deleteSession(sessionId) {
+            const paciente = dataManager.getPacienteById(currentPatientId);
+            if (!paciente) return;
+            const session = paciente.cronograma.find(s => s.sessionId === sessionId);
+            
+            if (session.status === 'finalizada') {
+                showNotification('Não é possível excluir uma sessão finalizada. Reabra a sessão para editar.', true);
+                return;
+            }
+            
+            if (confirm('Excluir esta sessão?')) {
+                paciente.cronograma = paciente.cronograma.filter(s => s.sessionId !== sessionId);
+                paciente.totalSessoes--;
+                await dataManager.db.collection('pacientes').doc(currentPatientId).update({
+                    cronograma: paciente.cronograma,
+                    totalSessoes: paciente.totalSessoes
+                });
+                renderSessionsList();
+                showNotification('Sessão excluída!');
+            }
+        }
+        
+        document.getElementById('addSessionBtn').onclick = async () => {
+            const paciente = dataManager.getPacienteById(currentPatientId);
+            if (!paciente) return;
+
+            const lastSession = paciente.cronograma[paciente.cronograma.length - 1];
+            let newDate = new Date();
+            if (lastSession) {
+                const [year, month, day] = lastSession.data.split('-').map(Number);
+                newDate = new Date(year, month - 1, day);
+                newDate.setDate(newDate.getDate() + 7);
+            }
+            
+            await dataManager.addSession(currentPatientId, {
+                data: newDate.toISOString().split('T')[0],
+                status: 'agendada',
+                horario: '', profissional: '', procedimento: '', medicacoes: []
+            });
+        };
+
+        document.getElementById('finishTreatmentBtn').onclick = async () => {
+            const paciente = dataManager.getPacienteById(currentPatientId);
+            if (!paciente) return;
+            if (confirm('Finalizar o tratamento deste paciente?')) {
+                const lastSession = paciente.cronograma.find(s => s.status === 'finalizada');
+                const dataUltimaSessao = lastSession ? lastSession.data : null;
+                await dataManager.updatePatientStatus(paciente.pacienteId, 'finalizado', null);
+                await dataManager.db.collection('pacientes').doc(paciente.pacienteId).update({ dataUltimaSessao });
+                openSessionModal(currentPatientId);
+                showNotification('Tratamento finalizado! Reavaliação pendente.', false);
+            }
+        };
+
+        document.getElementById('reopenTreatmentBtn').onclick = async () => {
+            const paciente = dataManager.getPacienteById(currentPatientId);
+            if (!paciente) return;
+            if (confirm('Reabrir o tratamento deste paciente?')) {
+                await dataManager.updatePatientStatus(paciente.pacienteId, 'ativo');
+                openSessionModal(currentPatientId);
+                showNotification('Tratamento reaberto!');
+            }
+        };
+        
+        // --- Stats, Utils & Config Logic ---
+        function updateStats() {
+            const today = new Date();
+            const todayStr = today.toISOString().split('T')[0];
+            const currentMonth = today.getMonth();
+            const currentYear = today.getFullYear();
+            const allSessions = dataManager.getPacientes().flatMap(p => 
+                p.cronograma.map(s => ({ ...s, pacienteId: p.pacienteId }))
+            );
+            
+            const currentMonthSessions = allSessions.filter(s => {
+                const sessionDate = new Date(s.data);
+                return sessionDate.getMonth() === currentMonth && sessionDate.getFullYear() === currentYear;
+            });
+            
+            const finalizadasThisMonth = currentMonthSessions.filter(s => s.status === 'finalizada');
+            const patientsInTreatment = dataManager.getPacientes().filter(p => p.status !== 'finalizado').length;
+            
+            const overdueSessions = allSessions.filter(s => {
+                const sessionDate = new Date(s.data + 'T00:00:00');
+                const todayMidnight = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+                const isOverdue = sessionDate < todayMidnight;
+                const isNotFinalized = s.status !== 'finalizada' && s.status !== 'reavaliacao';
+                return isOverdue && isNotFinalized;
+            });
+            
+            const pacientesPendentesReavaliacao = dataManager.getPacientes().filter(p => p.status === 'finalizado' && !p.dataReavaliacao).length;
+            
+            document.getElementById('totalPacientes').textContent = dataManager.getPacientes().length;
+            document.getElementById('pacientesComSessao').textContent = patientsInTreatment;
+            document.getElementById('finalizadas').textContent = finalizadasThisMonth.length;
+            document.getElementById('reavaliacaoPendentes').textContent = pacientesPendentesReavaliacao;
+            document.getElementById('atrasadas').textContent = overdueSessions.length;
+        }
+        
+        function openConfigModal(type) {
+            currentConfigType = type;
+            const titles = { medicos: '👨‍⚕️ Gerenciar Médicos', profissionais: '👩‍💼 Gerenciar Profissionais', procedimentos: '🔧 Gerenciar Procedimentos', protocolos: '📋 Gerenciar Protocolos', medicacoes: '💊 Gerenciar Medicações' };
+            
+            document.getElementById('modalTitle').textContent = titles[type];
+            document.getElementById('protocolForm').classList.toggle('hidden', type !== 'protocolos');
+            document.getElementById('medicationForm').classList.toggle('hidden', type !== 'medicacoes');
+            document.getElementById('regularForm').classList.toggle('hidden', type === 'protocolos' || type === 'medicacoes');
+            if (type !== 'protocolos' && type !== 'medicacoes') {
+                document.getElementById('newItemInput').placeholder = `Nome do ${type.slice(0, -1)}`;
+            }
+            
+            document.getElementById('configModal').classList.remove('hidden');
+            renderConfigItems();
+        }
+
+        document.getElementById('protocolFrequency').onchange = function() {
+            document.getElementById('mixedFrequencyOptions').classList.toggle('hidden', this.value !== 'mista');
+        };
+
+        async function addProtocol() {
+            const nome = document.getElementById('protocolName').value.trim();
+            const sessoes = parseInt(document.getElementById('protocolSessions').value);
+            const frequencia = document.getElementById('protocolFrequency').value;
+            
+            if (!nome || isNaN(sessoes) || sessoes <= 0 || !frequencia) {
+                showNotification('Preencha todos os campos corretamente!', true);
+                return;
+            }
+            if (dataManager.getConfigArray('protocolos').some(p => p.nome === nome)) { showNotification('Este protocolo já existe!', true); return; }
+            
+            let protocolData = { nome, sessoes, frequencia };
+            if (frequencia === 'mista') {
+                const semanais = parseInt(document.getElementById('weeklyCount').value) || 0;
+                const quinzenais = parseInt(document.getElementById('biweeklyCount').value) || 0;
+                const mensais = parseInt(document.getElementById('monthlyCount').value) || 0;
+                
+                if (semanais + quinzenais + mensais !== sessoes) { showNotification('A soma das sessões deve ser igual ao total!', true); return; }
+                protocolData = { ...protocolData, semanais, quinzenais, mensais };
+            }
+            await dataManager.addConfigItem('protocolos', protocolData);
+            
+            document.getElementById('protocolForm').querySelectorAll('input, select').forEach(el => el.value = '');
+            document.getElementById('mixedFrequencyOptions').classList.add('hidden');
+            renderConfigItems();
+        }
+
+        async function addMedication() {
+            const nome = document.getElementById('medicationName').value.trim();
+            const ref = document.getElementById('medicationRef').value.trim();
+            const lote = document.getElementById('medicationLote').value.trim();
+            const validade = document.getElementById('medicationValidade').value;
+            
+            if (!nome) { showNotification('Digite o nome da medicação!', true); return; }
+            
+            let displayName = nome;
+            if (ref) displayName += ` Ref: ${ref}`;
+            if (lote) displayName += ` Lote: ${lote}`;
+            if (validade) { displayName += ` Val: ${new Date(validade).toLocaleDateString('pt-BR')}`; }
+
+            if (dataManager.getConfigArray('medicacoes').some(med => med.displayName === displayName)) { showNotification('Esta medicação já existe!', true); return; }
+            
+            await dataManager.addConfigItem('medicacoes', { nome, ref, lote, validade, displayName });
+            document.getElementById('medicationForm').querySelectorAll('input').forEach(el => el.value = '');
+            renderConfigItems();
+        }
+        
+        function closeConfigModal() {
+            document.getElementById('configModal').classList.add('hidden');
+        }
+
+        async function addConfigItem() {
+            const input = document.getElementById('newItemInput');
+            const nome = input.value.trim();
+            if (!nome) { showNotification('Digite um nome válido!', true); return; }
+            if (dataManager.getConfigArray(currentConfigType).some(item => item.nome === nome)) { showNotification('Este item já existe!', true); return; }
+            
+            await dataManager.addConfigItem(currentConfigType, { nome });
+            input.value = '';
+            renderConfigItems();
+        }
+
+        async function editConfigItem(id, newValue) {
+            const item = dataManager.getConfigItem(currentConfigType, id);
+            if (!item || !newValue.trim()) { showNotification('Digite um nome válido!', true); return; }
+            
+            item.nome = newValue.trim();
+            const updatedItems = { ...dataManager.data.configData[currentConfigType], [id]: item };
+            await dataManager.db.collection('config').doc(currentConfigType).set({ items: updatedItems });
+            renderConfigItems();
+            showNotification('Item editado!');
+        }
+
+        async function deleteConfigItem(id) {
+            if (confirm('Excluir este item?')) {
+                await dataManager.deleteConfigItem(currentConfigType, id);
+                renderConfigItems();
+            }
+        }
+
+        function renderConfigItems() {
+            const container = document.getElementById('configItemsList');
+            container.innerHTML = '';
+            const items = dataManager.getConfigArray(currentConfigType);
+            
+            items.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'flex items-center justify-between p-3 border rounded';
+                if (currentConfigType === 'protocolos') {
+                    div.innerHTML = `<div><strong>${item.nome}</strong><br><small class="text-gray-600">${item.sessoes} sessões - ${item.frequencia}</small></div>`;
+                } else if (currentConfigType === 'medicacoes') {
+                    div.innerHTML = `<div><strong>${item.displayName || item.nome}</strong></div>`;
+                } else {
+                    div.innerHTML = `<input type="text" value="${item.nome}" class="flex-1 px-2 py-1 border rounded mr-2" oninput="this.value = capitalizeWords(this.value)" onblur="editConfigItem('${item.id}', this.value)" onkeypress="if(event.key==='Enter') editConfigItem('${item.id}', this.value)">`;
+                }
+                
+                div.innerHTML += `<button onclick="deleteConfigItem('${item.id}')" class="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600">Excluir</button>`;
+                container.appendChild(div);
+            });
+        }
+        
+        // --- Backup & Restore ---
+        document.getElementById('backupBtn').onclick = () => {
+            const blob = new Blob([JSON.stringify(dataManager.data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `tricomaster_backup_${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            showNotification('Backup realizado!');
+        };
+
+        document.getElementById('restoreBtn').onclick = () => { document.getElementById('restoreFile').click(); };
+
+        document.getElementById('restoreFile').onchange = (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const data = JSON.parse(e.target.result);
+                        if (data.pacientes && data.configData) {
+                            localStorage.setItem('tricomaster_data', e.target.result);
+                            window.location.reload();
+                        } else { showNotification('Arquivo de backup inválido!', true); }
+                    } catch (error) { showNotification('Arquivo inválido!', true); }
+                };
+                reader.readAsText(file);
+            }
+        };
+
+        // --- Reports ---
+        function openReportForm(type) {
+            let startDate, endDate;
+            const today = new Date();
+            
+            const lastMonth = new Date();
+            lastMonth.setMonth(lastMonth.getMonth() - 1);
+            startDate = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0];
+            endDate = today.toISOString().split('T')[0];
+            
+            document.getElementById('reportStartDate').value = startDate;
+            document.getElementById('reportEndDate').value = endDate;
+
+            const titles = { 
+                sessoes: 'Relatório de Sessões', 
+                medicacoes: 'Relatório de Medicações', 
+                dashboard: 'Relatório Dashboard', 
+            };
+            document.getElementById('reportFormTitle').textContent = titles[type];
+            document.getElementById('sessionFilters').classList.toggle('hidden', type !== 'sessoes');
+            
+            document.getElementById('reportForm').classList.remove('hidden');
+            populateReportFilters();
+        }
+
+        function closeReportForm() { document.getElementById('reportForm').classList.add('hidden'); }
+        function closeReportModal() { document.getElementById('reportModal').classList.add('hidden'); }
+
+        function populateReportFilters() {
+            const populateSelect = (id, data, placeholder) => {
+                const select = document.getElementById(id);
+                select.innerHTML = `<option value="">${placeholder}</option>` + data.map(item => `<option value="${item.id}">${item.nome || item.displayName}</option>`).join('');
+            };
+            populateSelect('reportPaciente', dataManager.getPacientes(), 'Todos');
+            populateSelect('reportMedico', dataManager.getConfigArray('medicos'), 'Todos');
+            populateSelect('reportProfissional', dataManager.getConfigArray('profissionais'), 'Todos');
+            populateSelect('reportProtocolo', dataManager.getConfigArray('protocolos'), 'Todos');
+            populateSelect('reportProcedimento', dataManager.getConfigArray('procedimentos'), 'Todos');
+        }
+
+        function generateReport() {
+            const startDate = document.getElementById('reportStartDate').value;
+            const endDate = document.getElementById('reportEndDate').value;
+            const reportType = document.getElementById('reportFormTitle').textContent;
+            
+            if (!startDate || !endDate) { showNotification('Selecione as datas inicial e final!', true); return; }
+            
+            let reportContent = '';
+            let reportFiltersHtml = '';
+            
+            const filters = {
+                'Período': `${new Date(startDate + 'T00:00:00').toLocaleDateString('pt-BR')} a ${new Date(endDate + 'T00:00:00').toLocaleDateString('pt-BR')}`
+            };
+
+            if (reportType.includes('Sessões')) {
+                const pacienteId = document.getElementById('reportPaciente').value;
+                const medicoId = document.getElementById('reportMedico').value;
+                const profissionalId = document.getElementById('reportProfissional').value;
+                const protocoloId = document.getElementById('reportProtocolo').value;
+                const tipo = document.getElementById('reportTipo').value;
+                const procedimentoId = document.getElementById('reportProcedimento').value;
+                const status = document.getElementById('reportStatus').value;
+                const comQueda = document.getElementById('reportQueda').value;
+                const precisaMedicacao = document.getElementById('reportMedicamentoNecessario').value;
+                const reavaliacao = document.getElementById('reportReavaliacao').value;
+
+                if(pacienteId) filters['Paciente'] = dataManager.getPacienteById(pacienteId)?.nome;
+                if(medicoId) filters['Médico'] = dataManager.getConfigItem('medicos', medicoId)?.nome;
+                if(profissionalId) filters['Profissional'] = dataManager.getConfigItem('profissionais', profissionalId)?.nome;
+                if(protocoloId) filters['Protocolo'] = dataManager.getConfigItem('protocolos', protocoloId)?.nome;
+                if(tipo) filters['Tipo'] = tipo;
+                if(procedimentoId) filters['Procedimento'] = dataManager.getConfigItem('procedimentos', procedimentoId)?.nome;
+                if(status) filters['Status'] = status;
+                if(comQueda) filters['Com Queda'] = comQueda;
+                if(precisaMedicacao) filters['Precisa de Medicação'] = precisaMedicacao;
+                if(reavaliacao) filters['Reavaliação Agendada'] = reavaliacao;
+                
+                reportContent = generateSessionReport(startDate, endDate, filters);
+            } else if (reportType.includes('Medicações')) {
+                reportContent = generateMedicationReport(startDate, endDate, filters);
+            } else if (reportType.includes('Dashboard')) {
+                reportContent = generateDashboardReport(startDate, endDate, filters);
+            }
+            
+            const filtersArray = Object.entries(filters).filter(([, value]) => value);
+            const orderedFilters = [
+                'Período', 'Paciente', 'Tipo', 'Protocolo', 'Procedimento', 'Profissional', 'Médico', 'Status', 'Com Queda', 'Precisa de Medicação', 'Reavaliação Agendada'
+            ];
+            
+            const filtersInOrder = orderedFilters.map(key => {
+                const filter = filtersArray.find(([k]) => k === key);
+                return filter ? `<div><strong>${filter[0]}:</strong> ${filter[1]}</div>` : '';
+            }).join('');
+
+
+            document.getElementById('reportModalTitle').textContent = reportType;
+            document.getElementById('modalReportContent').innerHTML = `
+                <div class="mb-4 p-3 bg-gray-50 rounded">
+                    <div class="report-filters-line">${filtersInOrder}</div>
+                </div>
+                ${reportContent}
+            `;
+            document.getElementById('reportModal').classList.remove('hidden');
+            document.getElementById('reportForm').classList.add('hidden');
+        }
+
+        function generateSessionReport(startDate, endDate, filters) {
+            const allSessions = dataManager.getPacientes().flatMap(p => p.cronograma.map(s => ({ ...s, pacienteId: p.pacienteId, pacienteNome: p.nome, pacienteMedico: p.medico, pacienteProtocolo: p.protocolo, pacienteTipo: p.tipo })));
+            
+            const filteredSessions = allSessions.filter(session => {
+                const paciente = dataManager.getPacienteById(session.pacienteId);
+                const isReavaliacao = filters['Reavaliação Agendada'] === 'sim' ? paciente.dataReavaliacao : filters['Reavaliação Agendada'] === 'nao' ? !paciente.dataReavaliacao : true;
+
+                return session.data >= startDate && session.data <= endDate &&
+                    (!filters['Paciente'] || session.pacienteNome === filters['Paciente']) &&
+                    (!filters['Médico'] || dataManager.getConfigItem('medicos', session.pacienteMedico)?.nome === filters['Médico']) &&
+                    (!filters['Profissional'] || dataManager.getConfigItem('profissionais', session.profissional)?.nome === filters['Profissional']) &&
+                    (!filters['Protocolo'] || dataManager.getConfigItem('protocolos', session.pacienteProtocolo)?.nome === filters['Protocolo']) &&
+                    (!filters['Tipo'] || session.pacienteTipo === filters['Tipo']) &&
+                    (!filters['Procedimento'] || dataManager.getConfigItem('procedimentos', session.procedimento)?.nome === filters['Procedimento']) &&
+                    (!filters['Status'] || session.status === filters['Status']) &&
+                    (!filters['Com Queda'] || session.queda_presente === filters['Com Queda']) &&
+                    (!filters['Precisa de Medicação'] || session.medicamento_necessario === filters['Precisa de Medicação']) &&
+                    isReavaliacao
+            }).sort((a, b) => new Date(a.data + 'T00:00:00') - new Date(b.data + 'T00:00:00') || (a.horario || '').localeCompare(b.horario || ''));
+            
+            let tableRows = filteredSessions.map(session => `
+                <tr>
+                    <td>${session.data ? new Date(session.data + 'T00:00:00').toLocaleDateString('pt-BR') : '-'}</td>
+                    <td>${session.horario || '-'}</td>
+                    <td>${session.pacienteNome}</td>
+                    <td>${session.pacienteTipo || '-'}</td>
+                    <td>${dataManager.getConfigItem('protocolos', session.pacienteProtocolo)?.nome || '-'}</td>
+                    <td>${dataManager.getConfigItem('procedimentos', session.procedimento)?.nome || '-'}</td>
+                    <td>${dataManager.getConfigItem('profissionais', session.profissional)?.nome || '-'}</td>
+                    <td>${dataManager.getConfigItem('medicos', session.pacienteMedico)?.nome || '-'}</td>
+                    <td>${session.status}</td>
+                    <td>${session.queda_presente || '-'}</td>
+                    <td>${session.medicamento_necessario || '-'}</td>
+                </tr>
+            `).join('');
+
+            return `
+                <div class="report-section">
+                    <p class="mb-4 text-sm"><strong>Total de sessões encontradas:</strong> ${filteredSessions.length}</p>
+                    <table class="report-table">
+                        <thead>
+                            <tr class="bg-gray-100">
+                                <th>Data</th>
+                                <th>Horário</th>
+                                <th>Paciente</th>
+                                <th>Tipo</th>
+                                <th>Protocolo</th>
+                                <th>Procedimento</th>
+                                <th>Profissional</th>
+                                <th>Médico</th>
+                                <th>Status</th>
+                                <th>Com Queda</th>
+                                <th>Precisa de Medicação</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${tableRows}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        function generateMedicationReport(startDate, endDate, filters) {
+            const allSessions = dataManager.getPacientes().flatMap(p => p.cronograma.map(s => ({ ...s, pacienteId: p.pacienteId, pacienteNome: p.nome, pacienteMedico: p.medico, pacienteProtocolo: p.protocolo, pacienteTipo: p.tipo })));
+            
+            const filteredSessions = allSessions.filter(session => {
+                const paciente = dataManager.getPacienteById(session.pacienteId);
+                const isReavaliacao = filters['Reavaliação Agendada'] === 'sim' ? paciente.dataReavaliacao : filters['Reavaliação Agendada'] === 'nao' ? !paciente.dataReavaliacao : true;
+                return session.data >= startDate && session.data <= endDate &&
+                    (!filters['Paciente'] || session.pacienteNome === filters['Paciente']) &&
+                    (!filters['Médico'] || dataManager.getConfigItem('medicos', session.pacienteMedico)?.nome === filters['Médico']) &&
+                    (!filters['Profissional'] || dataManager.getConfigItem('profissionais', session.profissional)?.nome === filters['Profissional']) &&
+                    (!filters['Protocolo'] || dataManager.getConfigItem('protocolos', session.pacienteProtocolo)?.nome === filters['Protocolo']) &&
+                    (!filters['Tipo'] || session.pacienteTipo === filters['Tipo']) &&
+                    (!filters['Procedimento'] || dataManager.getConfigItem('procedimentos', session.procedimento)?.nome === filters['Procedimento']) &&
+                    (!filters['Status'] || session.status === filters['Status']) &&
+                    (!filters['Com Queda'] || session.queda_presente === filters['Com Queda']) &&
+                    (!filters['Precisa de Medicação'] || session.medicamento_necessario === filters['Precisa de Medicação']) &&
+                    isReavaliacao;
+            });
+            
+            const medicationData = {};
+            
+            filteredSessions.forEach(session => {
+                if (session.medicacoes) {
+                    session.medicacoes.forEach(medRef => {
+                        const med = dataManager.getConfigItem('medicacoes', medRef.medicationId);
+                        if (med) {
+                            const key = med.id;
+                            if (!medicationData[key]) {
+                                medicationData[key] = {
+                                    nome: med.displayName || med.nome,
+                                    count: 0,
+                                    totalQuantity: 0
+                                };
+                            }
+                            medicationData[key].count++;
+                            medicationData[key].totalQuantity += medRef.quantidade || 0;
+                        }
+                    });
+                }
+            });
+            
+            let tableRows = Object.entries(medicationData)
+                .sort(([,a], [,b]) => b.count - a.count)
+                .map(([medId, data]) => `
+                    <tr>
+                        <td><strong>${data.nome}</strong></td>
+                        <td class="text-center">${data.count}</td>
+                        <td class="text-center">${data.totalQuantity}</td>
+                    </tr>
+                `).join('');
+
+            return `
+                <div class="report-section">
+                    <p class="mb-4 text-sm"><strong>Total de medicações diferentes:</strong> ${Object.keys(medicationData).length}</p>
+                    
+                    <table class="report-table">
+                        <thead>
+                            <tr class="bg-gray-100">
+                                <th>Medicação</th>
+                                <th>Qtd Utilizada</th>
+                                <th>Quantidade Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${tableRows}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        function generateDashboardReport(startDate, endDate, filters) {
+            const allSessions = dataManager.getPacientes().flatMap(p => p.cronograma);
+            const filteredSessions = allSessions.filter(session => session.data >= startDate && session.data <= endDate);
+            const finalizadasSessions = filteredSessions.filter(s => s.status === 'finalizada');
+            const uniquePatients = new Set(filteredSessions.map(s => s.pacienteId)).size;
+            
+            const totalPacientes = dataManager.getPacientes().length;
+            const pacientesAtivos = dataManager.getPacientes().filter(p => p.status !== 'finalizado').length;
+
+            const allPatients = dataManager.getPacientes();
+            const patientsInTreatment = allPatients.filter(p => p.status !== 'finalizado').length;
+            const sessionsCompleted = allPatients.flatMap(p => p.cronograma).filter(s => s.status === 'finalizada').length;
+            const reavaliacaoPending = allPatients.filter(p => p.status === 'finalizado' && !p.dataReavaliacao).length;
+            const overdue = allPatients.flatMap(p => p.cronograma).filter(s => new Date(s.data) < new Date() && s.status !== 'finalizada' && s.status !== 'reavaliacao').length;
+            
+            return `
+                <div class="report-section">
+                    <p class="mb-4 text-sm"><strong>Período:</strong> ${new Date(startDate + 'T00:00:00').toLocaleDateString('pt-BR')} a ${new Date(endDate + 'T00:00:00').toLocaleDateString('pt-BR')}</p>
+                    <table class="report-table">
+                        <thead>
+                            <tr class="bg-gray-100">
+                                <th>Indicador</th>
+                                <th>Valor</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Total de Pacientes</td><td>${totalPacientes}</td></tr>
+                            <tr><td>Pacientes em Tratamento</td><td>${patientsInTreatment}</td></tr>
+                            <tr><td>Sessões Finalizadas</td><td>${sessionsCompleted}</td></tr>
+                            <tr><td>Reavaliação Pendente</td><td>${reavaliacaoPending}</td></tr>
+                            <tr><td>Sessões Atrasadas</td><td>${overdue}</td></tr>
+                            <tr><td>Sessões do Período</td><td>${filteredSessions.length}</td></tr>
+                            <tr><td>Sessões Finalizadas no Período</td><td>${finalizadasSessions.length}</td></tr>
+                            <tr><td>Taxa de Comparecimento no Período</td><td>${filteredSessions.length > 0 ? Math.round((finalizadasSessions.length / filteredSessions.length) * 100) : 0}%</td></tr>
+                            <tr><td>Pacientes Únicos Atendidos no Período</td><td>${uniquePatients}</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+        
+        function printReportContent() {
+            const printContent = document.getElementById('modalReportContent').innerHTML;
+            const reportTitle = document.getElementById('reportModalTitle').textContent;
+            
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(`
+                <html>
+                    <head>
+                        <title>${reportTitle}</title>
+                        <style>
+                            body { font-family: Arial, sans-serif; margin: 15px; line-height: 1.2; color: #333; font-size: 8px; }
+                            .header { text-align: center; border-bottom: 1px solid #333; padding-bottom: 8px; margin-bottom: 15px; }
+                            .header h1 { color: #2563eb; margin-bottom: 3px; font-size: 14px; }
+                            .date { color: #666; font-size: 8px; }
+                            .report-section { margin-bottom: 15px; page-break-inside: avoid; }
+                            h2, h3 { color: #1f2937; border-bottom: 1px solid #e5e7eb; padding-bottom: 3px; font-size: 12px; }
+                            .report-table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+                            .report-table th, .report-table td { border: 1px solid #d1d5db; padding: 3px; text-align: left; font-size: 7px; }
+                            .report-table th { background-color: #f3f4f6; font-weight: bold; }
+                            .report-filters-line { font-size: 7px; display: flex; flex-wrap: nowrap; justify-content: space-between; overflow: hidden; white-space: nowrap; margin-bottom: 5px; }
+                            .report-filters-line strong { font-weight: bold; }
+                            .report-filters-line > div { margin-right: 10px; flex-shrink: 0; }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="header">
+                            <h1>${reportTitle}</h1>
+                            <p class="date">Relatório gerado em: ${new Date().toLocaleString('pt-BR')}</p>
+                        </div>
+                        ${printContent}
+                    </body>
+                </html>
+            `);
+            printWindow.document.close();
+            printWindow.print();
+        }
+
+        function exportToExcel() {
+            const reportContent = document.getElementById('modalReportContent');
+            const reportTitle = document.getElementById('reportModalTitle').textContent;
+            const tables = reportContent.querySelectorAll('table');
+            if (tables.length === 0) {
+                showNotification('Nenhuma tabela encontrada para exportar!', true);
+                return;
+            }
+
+            let csvContent = '\uFEFF'; // BOM for UTF-8
+            
+            // Adicionar filtros no início do CSV
+            const filterDiv = reportContent.querySelector('.report-filters-line');
+            if (filterDiv) {
+                const filters = Array.from(filterDiv.children).map(div => {
+                    const parts = div.textContent.split(':');
+                    const key = parts[0].trim();
+                    const value = parts[1].trim();
+                    return `"${key}";"${value}"`;
+                }).join('\n');
+                csvContent += filters + '\n\n';
+            }
+            
+            tables.forEach(table => {
+                const rows = table.querySelectorAll('tr');
+                // Headers
+                const headers = Array.from(rows[0].querySelectorAll('th')).map(th => `"${th.textContent.trim().replace(/"/g, '""')}"`).join(';');
+                csvContent += headers + '\n';
+                // Rows
+                for (let i = 1; i < rows.length; i++) {
+                    const cells = rows[i].querySelectorAll('td');
+                    const rowData = Array.from(cells).map(cell => {
+                        // Limpa o texto, remove aspas e coloca o valor em aspas para garantir que o Excel interprete corretamente
+                        let cellText = cell.textContent.trim().replace(/"/g, '""');
+                        // Substituir quebras de linha por espaços para manter em uma única célula
+                        cellText = cellText.replace(/\n/g, ' ').replace(/\s+/g, ' '); 
+                        return `"${cellText}"`;
+                    }).join(';');
+                    csvContent += rowData + '\n';
+                }
+                csvContent += '\n';
+            });
+            
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `${reportTitle.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.csv`;
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(link.href);
+            showNotification('Relatório exportado para Excel!');
+        }
+
+
+        // --- Other Utilities ---
+        function capitalizeWords(str) {
+            return str.replace(/\b\w/g, l => l.toUpperCase());
+        }
+
+        function clearForm() {
+            document.getElementById('nomeInput').value = '';
+            document.getElementById('medicoInput').value = '';
+            document.getElementById('protocoloInput').value = '';
+            document.getElementById('tipoInput').value = '';
+            document.getElementById('inicioInput').value = new Date().toISOString().split('T')[0];
+        }
+        
+        function showNotification(message, isError = false) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.classList.remove('hidden', 'bg-green-500', 'bg-red-500');
+            notification.classList.add(isError ? 'bg-red-500' : 'bg-green-500');
+            notification.classList.remove('hidden');
+            setTimeout(() => notification.classList.add('hidden'), 3000);
+        }
+
+        function generateSchedule(startDate, protocolo) {
+            const cronograma = [];
+            let currentDate = new Date(startDate + 'T00:00:00'); // Use T00:00:00 para evitar problemas de fuso horário
+            
+            const addSession = () => ({
+                sessionId: generateUUID(),
+                data: currentDate.toISOString().split('T')[0],
+                status: 'agendada',
+                horario: '', profissional: '', procedimento: '', medicacoes: []
+            });
+
+            if (protocolo.frequencia === 'semanal') {
+                for (let i = 0; i < protocolo.sessoes; i++) {
+                    cronograma.push(addSession());
+                    currentDate.setDate(currentDate.getDate() + 7);
+                }
+            } else if (protocolo.frequencia === 'quinzenal') {
+                for (let i = 0; i < protocolo.sessoes; i++) {
+                    cronograma.push(addSession());
+                    currentDate.setDate(currentDate.getDate() + 14);
+                }
+            } else if (protocolo.frequencia === 'mensal') {
+                for (let i = 0; i < protocolo.sessoes; i++) {
+                    cronograma.push(addSession());
+                    currentDate.setMonth(currentDate.getMonth() + 1);
+                }
+            } else if (protocolo.frequencia === 'mista') {
+                for (let i = 0; i < (protocolo.semanais || 0); i++) { cronograma.push(addSession()); currentDate.setDate(currentDate.getDate() + 7); }
+                for (let i = 0; i < (protocolo.quinzenais || 0); i++) { cronograma.push(addSession()); currentDate.setDate(currentDate.getDate() + 14); }
+                for (let i = 0; i < (protocolo.mensais || 0); i++) { cronograma.push(addSession()); currentDate.setMonth(currentDate.getMonth() + 1); }
+            }
+            return cronograma;
+        }
+
+        function showOverdueSessions() {
+            const today = new Date();
+            const todayStr = today.toISOString().split('T')[0];
+            const overdueSessions = dataManager.getPacientes().flatMap(p => p.cronograma.map(s => ({ ...s, pacienteId: p.pacienteId, pacienteNome: p.nome, pacienteProtocolo: p.protocolo, pacienteTipo: p.tipo })))
+                .filter(s => {
+                    const sessionDate = new Date(s.data + 'T00:00:00');
+                    const todayMidnight = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+                    const isOverdue = sessionDate < todayMidnight;
+                    const isNotFinalized = s.status !== 'finalizada' && s.status !== 'reavaliacao';
+                    return isOverdue && isNotFinalized;
+                })
+                .sort((a, b) => new Date(a.data + 'T00:00:00') - new Date(b.data + 'T00:00:00'));
+
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 no-print';
+            
+            let tableRows = '';
+            if (overdueSessions.length > 0) {
+                tableRows = overdueSessions.map(item => {
+                    const daysLate = Math.floor((new Date(today.getFullYear(), today.getMonth(), today.getDate()) - new Date(item.data + 'T00:00:00')) / (1000 * 60 * 60 * 24));
+                    return `
+                        <div class="p-3 border border-red-200 rounded bg-red-50 flex justify-between items-center">
+                            <div>
+                                <strong class="text-red-800">${item.pacienteNome}</strong><br>
+                                <small class="text-red-600">📅 ${new Date(item.data + 'T00:00:00').toLocaleDateString('pt-BR')} • ⏰ ${item.horario || 'Sem horário'} • 👤 ${dataManager.getConfigItem('profissionais', item.profissional)?.nome || 'Não definido'}</small><br>
+                                <small class="text-red-700 font-semibold">⚠️ ${daysLate} dias de atraso</small>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            modal.innerHTML = `
+                <div class="bg-white rounded-lg p-6 max-w-4xl w-full mx-4 max-h-96 overflow-y-auto">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-bold text-red-600">🚨 Sessões Atrasadas</h2>
+                        <div class="space-x-2">
+                            <button onclick="printOverdueList()" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">🖨️ Imprimir</button>
+                            <button onclick="this.closest('.fixed').remove()" class="text-gray-500 text-2xl">×</button>
+                        </div>
+                    </div>
+                    <div id="overdueContent">
+                        ${overdueSessions.length === 0 ? 
+                            '<p class="text-gray-500 text-center py-4">✅ Nenhuma sessão atrasada!</p>' :
+                            `<div class="mb-4">
+                                <p class="text-sm text-gray-600">Total: ${overdueSessions.length} sessões atrasadas</p>
+                            </div>
+                            <div class="space-y-2">
+                                ${tableRows}
+                            </div>`}
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        function showReavaliacaoModal() {
+            const pacientesReavaliacao = dataManager.getPacientes().filter(p => p.status === 'finalizado' && !p.dataReavaliacao);
+            
+            const modal = document.getElementById('reavaliacaoModal');
+            const list = document.getElementById('reavaliacaoList');
+            list.innerHTML = '';
+
+            if (pacientesReavaliacao.length > 0) {
+                list.innerHTML = pacientesReavaliacao.map(p => {
+                    const ultimaSessaoDate = p.dataUltimaSessao ? new Date(p.dataUltimaSessao + 'T00:00:00').toLocaleDateString('pt-BR') : 'N/A';
+                    return `
+                        <div class="p-3 border border-yellow-200 rounded bg-yellow-50">
+                            <strong class="text-yellow-800">${p.nome}</strong><br>
+                            <small class="text-yellow-600">Última sessão: ${ultimaSessaoDate}</small>
+                        </div>
+                    `;
+                }).join('');
+            } else {
+                list.innerHTML = '<p class="text-gray-500 text-center py-4">✅ Nenhum paciente com reavaliação pendente.</p>';
+            }
+            modal.classList.remove('hidden');
+        }
+
+
+        function printOverdueList() {
+            const content = document.getElementById('overdueContent').innerHTML;
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(`
+                <html>
+                    <head>
+                        <title>Sessões Atrasadas - TricoMaster Pro</title>
+                        <style>
+                            body { font-family: Arial, sans-serif; margin: 20px; font-size: 10px; }
+                            h1 { color: #dc2626; font-size: 16px; margin-bottom: 10px; }
+                            h3 { font-size: 12px; margin-bottom: 8px; }
+                            .overdue-item { border: 1px solid #fecaca; background: #fef2f2; padding: 12px; margin-bottom: 8px; border-radius: 4px; }
+                            .patient-name { font-weight: bold; color: #991b1b; }
+                            .details { color: #dc2626; font-size: 12px; }
+                            .days-late { color: #7f1d1d; font-weight: bold; }
+                        </style>
+                    </head>
+                    <body>
+                        <h1>🚨 TricoMaster Pro - Sessões Atrasadas</h1>
+                        <p>Relatório gerado em: ${new Date().toLocaleString('pt-BR')}</p>
+                        ${content}
+                    </body>
+                </html>
+            `);
+            printWindow.document.close();
+            printWindow.print();
+        }
+
+        function printTreatmentSummary() {
+            const paciente = dataManager.getPacienteById(currentPatientId);
+            if (!paciente) return;
+            const finalizadas = (paciente.cronograma || []).filter(s => s.status === 'finalizada').length;
+            const medicationStats = {};
+            (paciente.cronograma || []).forEach(sessao => {
+                (sessao.medicacoes || []).forEach(medRef => {
+                    const med = dataManager.getConfigItem('medicacoes', medRef.medicationId);
+                    if (med) {
+                        const medName = med.displayName || med.nome;
+                        if (!medicationStats[medName]) medicationStats[medName] = { totalUses: 0, totalQuantity: 0 };
+                        medicationStats[medName].totalUses++;
+                        medicationStats[medName].totalQuantity += medRef.quantidade || 0;
+                    }
+                });
+            });
+            const medico = dataManager.getConfigItem('medicos', paciente.medico)?.nome || 'N/A';
+            const protocolo = dataManager.getConfigItem('protocolos', paciente.protocolo)?.nome || 'N/A';
+            
+            let content = `
+                <div class="header"><h1>TricoMaster Pro - Resumo do Tratamento</h1><p class="date">Relatório gerado em: ${new Date().toLocaleString('pt-BR')}</p></div>
+                <div class="patient-info"><h2>Dados do Paciente</h2>
+                    <table class="info-table">
+                        <tr><td><strong>Nome:</strong></td><td>${paciente.nome}</td></tr>
+                        <tr><td><strong>Médico:</strong></td><td>${medico}</td></tr>
+                        <tr><td><strong>Tipo:</strong></td><td>${paciente.tipo}</td></tr>
+                        <tr><td><strong>Protocolo:</strong></td><td>${protocolo}</td></tr>
+                        <tr><td><strong>Início:</strong></td><td>${new Date(paciente.inicio + 'T00:00:00').toLocaleDateString('pt-BR')}</td></tr>
+                        <tr><td><strong>Status:</strong></td><td>${paciente.status || 'ativo'}</td></tr>
+                        <tr><td><strong>Progresso:</strong></td><td>${finalizadas}/${paciente.totalSessoes} sessões finalizadas (${Math.round((finalizadas/paciente.totalSessoes)*100)}%)</td></tr>
+                    </table>
+                </div>
+                ${Object.keys(medicationStats).length > 0 ? `
+                <div class="medication-summary"><h2>Resumo de Medicações Utilizadas</h2>
+                    <table class="medication-table">
+                        <thead><tr><th>Medicação</th><th>Qtd Utilizada</th><th>Quantidade Total</th></tr></thead>
+                        <tbody>
+                            ${Object.entries(medicationStats).sort(([,a], [,b]) => b.totalUses - a.totalUses).map(([medName, stats]) => `
+                                <tr><td>${medName}</td><td>${stats.totalUses}</td><td>${stats.totalQuantity}</td></tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>` : ''}
+                <div class="sessions-section"><h3>Histórico de Sessões</h3>
+                    <table class="sessions-table">
+                        <thead><tr><th>Sessão</th><th>Data</th><th>Profissional</th><th>Procedimento</th><th>Medicações</th></tr></thead>
+                        <tbody>
+                            ${(paciente.cronograma || []).map((sessao, index) => {
+                                const profissional = dataManager.getConfigItem('profissionais', sessao.profissional)?.nome || '-';
+                                const procedimento = dataManager.getConfigItem('procedimentos', sessao.procedimento)?.nome || '-';
+                                const medicacoes = (sessao.medicacoes || []).length > 0 ? sessao.medicacoes.map(medRef => `${dataManager.getConfigItem('medicacoes', medRef.medicationId)?.displayName || 'Desconhecido'} (Qtd: ${medRef.quantidade || 'N/A'})`).join(', ') : '-';
+                                return `
+                                    <tr>
+                                        <td>${index + 1}</td><td>${sessao.data ? new Date(sessao.data + 'T00:00:00').toLocaleDateString('pt-BR') : '-'}</td>
+                                        <td>${profissional}</td><td>${procedimento}</td><td>${medicacoes}</td>
+                                    </tr>`;
+                            }).join('')}
+                        </tbody>
+                    </table>
+                </div>`;
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(`<html><head><title>Resumo do Tratamento - ${paciente.nome}</title><style>
+                body { font-family: Arial, sans-serif; margin: 15px; line-height: 1.2; color: #333; font-size: 8px; }
+                .header { text-align: center; border-bottom: 1px solid #333; padding-bottom: 8px; margin-bottom: 15px; }
+                .header h1 { color: #2563eb; margin-bottom: 3px; font-size: 14px; }
+                .date { color: #666; font-size: 8px; }
+                .patient-info, .sessions-section, .medication-summary { margin-bottom: 15px; page-break-inside: avoid; }
+                h2, h3 { color: #1f2937; border-bottom: 1px solid #e5e7eb; padding-bottom: 3px; font-size: 12px; }
+                .info-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+                .info-table td { padding: 3px; border-bottom: 1px solid #f3f4f6; font-size: 8px; }
+                .info-table td:first-child { width: 120px; background-color: #f9fafb; }
+                .sessions-table, .medication-table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+                .sessions-table th, .sessions-table td, .medication-table th, .medication-table td { border: 1px solid #d1d5db; padding: 3px; text-align: left; font-size: 7px; }
+                .sessions-table th, .medication-table th { background-color: #f3f4f6; font-weight: bold; }
+                </style></head><body>${content}</body></html>`);
+            printWindow.document.close();
+            printWindow.print();
+        }
+
+        // --- Initialization ---
+        document.addEventListener('DOMContentLoaded', () => {
+            auth.onAuthStateChanged(user => {
+                const loginScreen = document.getElementById('loginScreen');
+                const app = document.getElementById('app');
+
+                if (user) {
+                    // Usuário logado
+                    dataManager.init(); // Inicia a sincronização com o banco de dados
+                    loginScreen.classList.add('hidden');
+                    app.classList.remove('hidden');
+                } else {
+                    // Nenhum usuário logado
+                    if (dataManager.unsubscribe) {
+                        dataManager.stopSync();
+                    }
+                    loginScreen.classList.remove('hidden');
+                    app.classList.add('hidden');
+                }
+            });
+
+            document.getElementById('loginBtn').addEventListener('click', login);
+            
+            const hasData = dataManager.getPacientes().length > 0 || Object.keys(dataManager.getConfigData().medicos).length > 0;
+            if (!hasData) {
+                showWelcomeModal();
+            }
+            checkAutoBackup();
+            refreshUI();
+            clearForm();
+        });
+        
+    </script>
+</body>
+</html>
