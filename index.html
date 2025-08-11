@@ -551,16 +551,15 @@
                         medicacoes: {}
                     }
                 };
-                this.unsubscribe = null;
+                this.unsubscribes = {}; // Armazena os ouvintes de cada coleção
             }
 
             async init() {
-                const configSnapshot = await this.db.collection('config').get();
-                configSnapshot.forEach(doc => {
-                    this.data.configData[doc.id] = doc.data().items || {};
-                });
+                // Remove ouvintes antigos para evitar duplicidade
+                this.stopSync();
 
-                this.unsubscribe = this.db.collection('pacientes').onSnapshot(snapshot => {
+                // Ouve por mudanças nos pacientes
+                this.unsubscribes.pacientes = this.db.collection('pacientes').onSnapshot(snapshot => {
                     this.data.pacientes = snapshot.docs.map(doc => ({ ...doc.data(), pacienteId: doc.id }));
                     this.data.pacientes = this.data.pacientes.map(p => this.migratePacienteData(p));
                     refreshUI();
@@ -568,12 +567,26 @@
                     console.error('Erro ao sincronizar dados do Firebase:', err);
                     showNotification('Erro ao sincronizar dados com o servidor.', true);
                 });
+                
+                // Ouve por mudanças nas configurações (medicos, profissionais, etc.)
+                const configCollections = ['medicos', 'profissionais', 'procedimentos', 'protocolos', 'medicacoes'];
+                for (const collection of configCollections) {
+                    this.unsubscribes[collection] = this.db.collection('config').doc(collection).onSnapshot(doc => {
+                        this.data.configData[collection] = doc.data().items || {};
+                        refreshUI();
+                    }, err => {
+                        console.error(`Erro ao sincronizar dados da coleção ${collection}:`, err);
+                    });
+                }
             }
 
             stopSync() {
-              if (this.unsubscribe) {
-                this.unsubscribe();
+              for (const key in this.unsubscribes) {
+                if (this.unsubscribes[key]) {
+                  this.unsubscribes[key]();
+                }
               }
+              this.unsubscribes = {};
             }
 
             migratePacienteData(paciente) {
@@ -713,6 +726,9 @@
             renderCalendar();
             updateStats();
             updateDropdowns();
+            if (document.getElementById('configModal').classList.contains('hidden') === false) {
+                renderConfigItems();
+            }
         }
 
         function switchTab(tabName) {
@@ -1481,7 +1497,6 @@
             
             document.getElementById('protocolForm').querySelectorAll('input, select').forEach(el => el.value = '');
             document.getElementById('mixedFrequencyOptions').classList.add('hidden');
-            renderConfigItems();
         }
 
         async function addMedication() {
@@ -1501,7 +1516,6 @@
             
             await dataManager.addConfigItem('medicacoes', { nome, ref, lote, validade, displayName });
             document.getElementById('medicationForm').querySelectorAll('input').forEach(el => el.value = '');
-            renderConfigItems();
         }
         
         function closeConfigModal() {
@@ -1509,17 +1523,15 @@
         }
 
         async function addConfigItem() {
-    const input = document.getElementById('newItemInput');
-    const nome = input.value.trim();
-    if (!nome) { showNotification('Digite um nome válido!', true); return; }
-    if (dataManager.getConfigArray(currentConfigType).some(item => item.nome === nome)) { showNotification('Este item já existe!', true); return; }
-    
-    
-    await dataManager.addConfigItem(currentConfigType, { nome });
-    input.value = '';
-    renderConfigItems(); // Essa linha garante que a lista seja atualizada
-}
-         
+            const input = document.getElementById('newItemInput');
+            const nome = input.value.trim();
+            if (!nome) { showNotification('Digite um nome válido!', true); return; }
+            if (dataManager.getConfigArray(currentConfigType).some(item => item.nome === nome)) { showNotification('Este item já existe!', true); return; }
+            
+            await dataManager.addConfigItem(currentConfigType, { nome });
+            input.value = '';
+        }
+
         async function editConfigItem(id, newValue) {
             const item = dataManager.getConfigItem(currentConfigType, id);
             if (!item || !newValue.trim()) { showNotification('Digite um nome válido!', true); return; }
@@ -1527,14 +1539,12 @@
             item.nome = newValue.trim();
             const updatedItems = { ...dataManager.data.configData[currentConfigType], [id]: item };
             await dataManager.db.collection('config').doc(currentConfigType).set({ items: updatedItems });
-            renderConfigItems();
             showNotification('Item editado!');
         }
 
         async function deleteConfigItem(id) {
             if (confirm('Excluir este item?')) {
                 await dataManager.deleteConfigItem(currentConfigType, id);
-                renderConfigItems();
             }
         }
 
@@ -2220,7 +2230,7 @@
                     app.classList.remove('hidden');
                 } else {
                     // Nenhum usuário logado
-                    if (dataManager.unsubscribe) {
+                    if (dataManager.unsubscribes) {
                         dataManager.stopSync();
                     }
                     loginScreen.classList.remove('hidden');
@@ -2242,5 +2252,3 @@
     </script>
 </body>
 </html>
-
-
