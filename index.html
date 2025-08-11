@@ -1,61 +1,79 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tricomaster Pro - Sistema Completo</title>
+    <title>TricoMaster GS Tatuapé</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @media print {
-            .no-print { display: none !important; }
-            
-            body { 
-                font-family: Arial, sans-serif; 
-                margin: 15px; 
-                line-height: 1.2; 
-                color: #333; 
-                font-size: 8px; 
+            .no-print {
+                display: none !important;
             }
-            .header { 
-                text-align: center; 
-                border-bottom: 1px solid #333; 
-                padding-bottom: 8px; 
-                margin-bottom: 15px; 
+
+            body {
+                font-family: Arial, sans-serif;
+                margin: 15px;
+                line-height: 1.2;
+                color: #333;
+                font-size: 8px;
             }
-            .header h1 { 
-                color: #2563eb; 
-                margin-bottom: 3px; 
-                font-size: 14px; 
+
+            .header {
+                text-align: center;
+                border-bottom: 1px solid #333;
+                padding-bottom: 8px;
+                margin-bottom: 15px;
             }
-            .date { 
-                color: #666; 
-                font-size: 8px; 
+
+            .header h1 {
+                color: #2563eb;
+                margin-bottom: 3px;
+                font-size: 14px;
             }
-            .report-section { 
-                margin-bottom: 15px; 
-                page-break-inside: avoid; 
+
+            .date {
+                color: #666;
+                font-size: 8px;
             }
-            h2, h3 { 
-                color: #1f2937; 
-                border-bottom: 1px solid #e5e7eb; 
-                padding-bottom: 3px; 
-                font-size: 12px; 
+
+            .report-section {
+                margin-bottom: 15px;
+                page-break-inside: avoid;
             }
-            .print-table, .report-table { 
-                width: 100%; 
-                border-collapse: collapse; 
-                margin-top: 8px; 
+
+            h2,
+            h3 {
+                color: #1f2937;
+                border-bottom: 1px solid #e5e7eb;
+                padding-bottom: 3px;
+                font-size: 12px;
             }
-            .print-table th, .print-table td, .report-table th, .report-table td { 
-                border: 1px solid #d1d5db; 
-                padding: 3px; 
-                text-align: left; 
-                font-size: 7px; 
+
+            .print-table,
+            .report-table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-top: 8px;
             }
-            .print-table th, .report-table th { 
-                background-color: #f3f4f6; 
-                font-weight: bold; 
+
+            .print-table th,
+            .print-table td,
+            .report-table th,
+            .report-table td {
+                border: 1px solid #d1d5db;
+                padding: 3px;
+                text-align: left;
+                font-size: 7px;
             }
+
+            .print-table th,
+            .report-table th {
+                background-color: #f3f4f6;
+                font-weight: bold;
+            }
+
             .report-filters-line {
                 font-size: 7px;
                 display: flex;
@@ -65,10 +83,12 @@
                 white-space: nowrap;
                 margin-bottom: 5px;
             }
+
             .report-filters-line strong {
                 font-weight: bold;
             }
-            .report-filters-line > div {
+
+            .report-filters-line>div {
                 margin-right: 10px;
                 flex-shrink: 0;
             }
@@ -80,57 +100,85 @@
                 gap: 15px;
                 margin-bottom: 15px;
             }
-            .patient-info, .medication-summary {
-                flex: 1; /* Permite que os itens cresçam para ocupar o espaço disponível */
-                min-width: 300px; /* Garante que não fiquem muito pequenos */
+
+            .patient-info,
+            .medication-summary {
+                flex: 1;
+                /* Permite que os itens cresçam para ocupar o espaço disponível */
+                min-width: 300px;
+                /* Garante que não fiquem muito pequenos */
                 page-break-inside: avoid;
             }
-            .info-table, .medication-table {
+
+            .info-table,
+            .medication-table {
                 width: 100%;
                 border-collapse: collapse;
                 margin-top: 10px;
             }
-            .info-table td, .medication-table td {
+
+            .info-table td,
+            .medication-table td {
                 padding: 3px;
                 border-bottom: 1px solid #f3f4f6;
                 font-size: 8px;
             }
+
             .info-table td:first-child {
                 width: 120px;
                 background-color: #f9fafb;
             }
+
             /* ALTERAÇÃO AQUI */
             .medication-table th {
                 background-color: #f3f4f6;
                 font-weight: bold;
-                font-size: 8px; /* Ajusta o tamanho da fonte para o cabeçalho */
-                color: #000; /* Garante a cor preta */
+                font-size: 8px;
+                /* Ajusta o tamanho da fonte para o cabeçalho */
+                color: #000;
+                /* Garante a cor preta */
             }
+
             .sessions-section {
                 clear: both;
             }
-            
+
             /* ALTERAÇÃO AQUI: REMOVE AS BORDAS DAS CÉLULAS DA TABELA DE SESSÕES */
-            .sessions-table th, .sessions-table td {
-                border: none; /* Remove a borda das células */
+            .sessions-table th,
+            .sessions-table td {
+                border: none;
+                /* Remove a borda das células */
                 padding: 3px;
                 text-align: left;
                 font-size: 7px;
-                border-bottom: 1px solid #d1d5db; /* Adiciona uma borda inferior para separar as linhas */
+                border-bottom: 1px solid #d1d5db;
+                /* Adiciona uma borda inferior para separar as linhas */
             }
+
             .sessions-table th {
                 background-color: #f3f4f6;
                 font-weight: bold;
-                font-size: 8px; /* Ajusta o tamanho da fonte para o cabeçalho */
-                color: #000; /* Garante a cor preta */
+                font-size: 8px;
+                /* Ajusta o tamanho da fonte para o cabeçalho */
+                color: #000;
+                /* Garante a cor preta */
             }
         }
-        
-        .status-select option[value="agendada"] { color: #2563eb; }
-        .status-select option[value="finalizada"] { color: #16a34a; }
-        .status-select option[value="reavaliacao"] { color: #dc2626; }
+
+        .status-select option[value="agendada"] {
+            color: #2563eb;
+        }
+
+        .status-select option[value="finalizada"] {
+            color: #16a34a;
+        }
+
+        .status-select option[value="reavaliacao"] {
+            color: #dc2626;
+        }
     </style>
 </head>
+
 <body class="bg-gray-100 min-h-screen">
 
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
@@ -138,28 +186,29 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
 
     <script>
-      const firebaseConfig = {
-        apiKey: "AIzaSyCgyC8zQcc4ofl7HjA4gWhT9Ll3RoWvtVk",
-        authDomain: "gs-tricomaster.firebaseapp.com",
-        projectId: "gs-tricomaster",
-        storageBucket: "gs-tricomaster.firebasestorage.app",
-        messagingSenderId: "533452308099",
-        appId: "1:533452308099:web:1318f589088510ccd965b6"
-      };
+        const firebaseConfig = {
+            apiKey: "AIzaSyCgyC8zQcc4ofl7HjA4gWhT9Ll3RoWvtVk",
+            authDomain: "gs-tricomaster.firebaseapp.com",
+            projectId: "gs-tricomaster",
+            storageBucket: "gs-tricomaster.firebasestorage.app",
+            messagingSenderId: "533452308099",
+            appId: "1:533452308099:web:1318f589088510ccd965b6"
+        };
 
-      firebase.initializeApp(firebaseConfig);
-      const db = firebase.firestore();
-      const auth = firebase.auth();
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const auth = firebase.auth();
     </script>
-    
+
     <div id="loginScreen" class="fixed inset-0 bg-gray-100 flex items-center justify-center z-50">
         <div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-sm text-center">
-            <h2 class="text-2xl font-bold mb-6">TricoMaster Pro</h2>
+            <h2 class="text-2xl font-bold mb-6">TricoMaster GS Tatuapé</h2>
             <p class="mb-4">Faça login para continuar</p>
             <input type="email" id="loginEmail" placeholder="Email" class="w-full p-2 mb-3 border rounded">
             <input type="password" id="loginPassword" placeholder="Senha" class="w-full p-2 mb-4 border rounded">
             <button id="loginBtn" class="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700">Entrar</button>
-            <p id="loginError" class="text-red-500 text-sm mt-3 hidden">Erro ao fazer login. Verifique seu email e senha.</p>
+            <p id="loginError" class="text-red-500 text-sm mt-3 hidden">Erro ao fazer login. Verifique seu email e
+                senha.</p>
         </div>
     </div>
 
@@ -167,10 +216,11 @@
         <header class="bg-blue-600 text-white p-4 no-print">
             <div class="max-w-6xl mx-auto flex justify-between items-center">
                 <div>
-                    <h1 class="text-2xl font-bold">🩺 TricoMaster Pró Tatuapé</h1>
-                    <p class="text-blue-100">Sistema de Gestão Capilar Completo</p>
+                    <h1 class="text-2xl font-bold">TricoMaster GS Tatuapé</h1>
+                    <p class="text-blue-100">Sistema de Gestão Capilar</p>
                 </div>
-                <button onclick="logout()" class="bg-blue-800 text-white px-4 py-2 rounded-lg hover:bg-blue-900">Sair</button>
+                <button onclick="logout()"
+                    class="bg-blue-800 text-white px-4 py-2 rounded-lg hover:bg-blue-900">Sair</button>
             </div>
         </header>
 
@@ -188,24 +238,29 @@
                     <h3 class="text-sm">Sessões Realizadas</h3>
                     <p class="text-2xl font-bold" id="finalizadas">0</p>
                 </div>
-                <div class="bg-yellow-500 text-white rounded-lg p-4 text-center cursor-pointer" onclick="showReavaliacaoModal()">
+                <div class="bg-yellow-500 text-white rounded-lg p-4 text-center cursor-pointer"
+                    onclick="showReavaliacaoModal()">
                     <h3 class="text-sm">Reavaliação</h3>
                     <p class="text-2xl font-bold" id="reavaliacaoPendentes">0</p>
                 </div>
-                <div class="bg-red-500 text-white rounded-lg p-4 text-center cursor-pointer" onclick="showOverdueSessions()">
+                <div class="bg-red-500 text-white rounded-lg p-4 text-center cursor-pointer"
+                    onclick="showOverdueSessions()">
                     <h3 class="text-sm">Atrasadas</h3>
                     <p class="text-2xl font-bold" id="atrasadas">0</p>
                 </div>
             </div>
-            
+
             <div class="bg-white rounded-lg shadow mb-6 no-print">
                 <div class="flex justify-between items-center px-4 py-3 border-b border-gray-200">
                     <div class="flex items-center space-x-2">
-                        <button id="prevWeek" class="bg-gray-200 text-gray-700 px-3 py-1 rounded hover:bg-gray-300 transition-colors duration-200 text-lg">←</button>
+                        <button id="prevWeek"
+                            class="bg-gray-200 text-gray-700 px-3 py-1 rounded hover:bg-gray-300 transition-colors duration-200 text-lg">←</button>
                         <h2 class="text-xl font-bold text-gray-800" id="weekRange"></h2>
-                        <button id="nextWeek" class="bg-gray-200 text-gray-700 px-3 py-1 rounded hover:bg-gray-300 transition-colors duration-200 text-lg">→</button>
+                        <button id="nextWeek"
+                            class="bg-gray-200 text-gray-700 px-3 py-1 rounded hover:bg-gray-300 transition-colors duration-200 text-lg">→</button>
                     </div>
-                    <button id="currentWeek" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors duration-200 text-sm">Hoje</button>
+                    <button id="currentWeek"
+                        class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors duration-200 text-sm">Hoje</button>
                 </div>
                 <div class="grid grid-cols-7 text-center font-semibold text-gray-600 border-b border-gray-200">
                     <span class="py-2">Dom</span>
@@ -231,16 +286,22 @@
                     <div class="flex justify-between items-center mb-4">
                         <h2 class="text-xl font-bold">Gerenciar Pacientes</h2>
                         <div class="space-x-2">
-                            <button id="novoPacienteBtn" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">+ Novo Paciente</button>
-                            <button id="procurarPacienteBtn" class="bg-green-800 text-white px-4 py-2 rounded hover:bg-green-900">🔍 Procurar Paciente</button>
+                            <button id="novoPacienteBtn"
+                                class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">+ Novo
+                                Paciente</button>
+                            <button id="procurarPacienteBtn"
+                                class="bg-green-800 text-white px-4 py-2 rounded hover:bg-green-900">🔍 Procurar
+                                Paciente</button>
                         </div>
                     </div>
-                    
+
                     <div id="procurarPacienteForm" class="hidden bg-gray-50 p-4 rounded mb-4">
                         <h3 class="font-bold mb-3">Procurar Paciente</h3>
                         <div class="grid grid-cols-1 md:grid-cols-6 gap-2 mb-3">
-                            <input type="text" id="searchInput" placeholder="Digite o nome do paciente..." class="px-3 py-2 border rounded col-span-2">
-                            <input type="date" id="dateFilterStart" class="px-3 py-2 border rounded" title="Data inicial">
+                            <input type="text" id="searchInput" placeholder="Digite o nome do paciente..."
+                                class="px-3 py-2 border rounded col-span-2">
+                            <input type="date" id="dateFilterStart" class="px-3 py-2 border rounded"
+                                title="Data inicial">
                             <input type="date" id="dateFilterEnd" class="px-3 py-2 border rounded" title="Data final">
                             <select id="statusFilter" class="px-3 py-2 border rounded">
                                 <option value="todas">Todas</option>
@@ -248,15 +309,18 @@
                                 <option value="finalizada">Finalizada</option>
                                 <option value="reavaliacao">Reavaliação</option>
                             </select>
-                            <button id="limparBusca" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">Limpar</button>
+                            <button id="limparBusca"
+                                class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">Limpar</button>
                         </div>
-                        <p class="text-sm text-gray-600">Use os filtros para encontrar pacientes com sessões no período e status selecionados</p>
+                        <p class="text-sm text-gray-600">Use os filtros para encontrar pacientes com sessões no período e
+                            status selecionados</p>
                     </div>
-                    
+
                     <div id="novoPacienteForm" class="hidden bg-gray-50 p-4 rounded mb-4">
                         <h3 class="font-bold mb-3">Cadastrar Paciente</h3>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <input type="text" id="nomeInput" placeholder="Nome completo" class="px-3 py-2 border rounded" oninput="this.value = capitalizeWords(this.value)">
+                            <input type="text" id="nomeInput" placeholder="Nome completo"
+                                class="px-3 py-2 border rounded" oninput="this.value = capitalizeWords(this.value)">
                             <select id="medicoInput" class="px-3 py-2 border rounded">
                                 <option value="">Selecione o médico</option>
                             </select>
@@ -271,41 +335,50 @@
                             <input type="date" id="inicioInput" class="px-3 py-2 border rounded">
                         </div>
                         <div class="mt-4 space-x-2">
-                            <button id="salvarPaciente" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Salvar</button>
-                            <button id="cancelarPaciente" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">Cancelar</button>
+                            <button id="salvarPaciente"
+                                class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Salvar</button>
+                            <button id="cancelarPaciente"
+                                class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">Cancelar</button>
                         </div>
                     </div>
 
                     <div id="listaPacientes" class="space-y-3"></div>
-                    
+
                     <div id="paginationContainer" class="flex justify-center items-center space-x-2 mt-6">
-                        <button id="prevPage" class="bg-gray-500 text-white px-3 py-1 rounded hover:bg-gray-600 disabled:opacity-50">← Anterior</button>
+                        <button id="prevPage"
+                            class="bg-gray-500 text-white px-3 py-1 rounded hover:bg-gray-600 disabled:opacity-50">←
+                            Anterior</button>
                         <span id="pageInfo" class="text-sm text-gray-600">Página 1 de 1</span>
-                        <button id="nextPage" class="bg-gray-500 text-white px-3 py-1 rounded hover:bg-gray-600 disabled:opacity-50">Próxima →</button>
+                        <button id="nextPage"
+                            class="bg-gray-500 text-white px-3 py-1 rounded hover:bg-gray-600 disabled:opacity-50">Próxima
+                            →</button>
                     </div>
                 </div>
 
                 <div id="relatoriosContent" class="p-6 hidden">
                     <h2 class="text-xl font-bold mb-4">📊 Relatórios</h2>
-                    
+
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                        <button onclick="openReportForm('sessoes')" class="bg-blue-500 text-white p-4 rounded-lg hover:bg-blue-600">
+                        <button onclick="openReportForm('sessoes')"
+                            class="bg-blue-500 text-white p-4 rounded-lg hover:bg-blue-600">
                             <div class="text-2xl mb-2">📅</div>
                             <div class="text-sm">Relatório de Sessões</div>
                         </button>
-                        <button onclick="openReportForm('medicacoes')" class="bg-green-500 text-white p-4 rounded-lg hover:bg-green-600">
+                        <button onclick="openReportForm('medicacoes')"
+                            class="bg-green-500 text-white p-4 rounded-lg hover:bg-green-600">
                             <div class="text-2xl mb-2">💊</div>
                             <div class="text-sm">Relatório de Medicações</div>
                         </button>
-                        <button onclick="openReportForm('dashboard')" class="bg-purple-500 text-white p-4 rounded-lg hover:bg-purple-600">
+                        <button onclick="openReportForm('dashboard')"
+                            class="bg-purple-500 text-white p-4 rounded-lg hover:bg-purple-600">
                             <div class="text-2xl mb-2">📊</div>
                             <div class="text-sm">Relatório Dashboard</div>
                         </button>
                     </div>
-                    
+
                     <div id="reportForm" class="hidden bg-gray-50 p-4 rounded">
                         <h3 class="font-bold mb-4" id="reportFormTitle">Filtros do Relatório</h3>
-                        
+
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                             <div>
                                 <label class="block text-sm font-medium mb-1">Data Inicial:</label>
@@ -316,7 +389,7 @@
                                 <input type="date" id="reportEndDate" class="w-full px-3 py-2 border rounded">
                             </div>
                         </div>
-                        
+
                         <div id="sessionFilters" class="hidden">
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                                 <div>
@@ -395,45 +468,57 @@
                                 </div>
                             </div>
                         </div>
-                        
+
                         <div class="flex space-x-2">
-                            <button onclick="generateReport()" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Gerar Relatório</button>
-                            <button onclick="closeReportForm()" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">Cancelar</button>
+                            <button onclick="generateReport()"
+                                class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Gerar
+                                Relatório</button>
+                            <button onclick="closeReportForm()"
+                                class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">Cancelar</button>
                         </div>
                     </div>
                 </div>
 
                 <div id="configContent" class="p-6 hidden">
                     <h2 class="text-xl font-bold mb-4">Configurações</h2>
-                    
+
                     <div class="grid grid-cols-5 gap-4 mb-6">
-                        <button onclick="openConfigModal('medicos')" class="bg-blue-500 text-white p-4 rounded-lg hover:bg-blue-600">
+                        <button onclick="openConfigModal('medicos')"
+                            class="bg-blue-500 text-white p-4 rounded-lg hover:bg-blue-600">
                             <div class="text-2xl mb-2">👨‍⚕️</div>
                             <div class="text-sm">Médicos</div>
                         </button>
-                        <button onclick="openConfigModal('profissionais')" class="bg-green-500 text-white p-4 rounded-lg hover:bg-green-600">
+                        <button onclick="openConfigModal('profissionais')"
+                            class="bg-green-500 text-white p-4 rounded-lg hover:bg-green-600">
                             <div class="text-2xl mb-2">👩‍💼</div>
                             <div class="text-sm">Profissionais</div>
                         </button>
-                        <button onclick="openConfigModal('procedimentos')" class="bg-cyan-500 text-white p-4 rounded-lg hover:bg-cyan-600">
-                            <div class="text-2xl mb-2">🔧</div>
+                        <button onclick="openConfigModal('procedimentos')"
+                            class="bg-cyan-500 text-white p-4 rounded-lg hover:bg-cyan-600">
+                            <div class="text-2xl mb-2">💉</div>
                             <div class="text-sm">Procedimentos</div>
                         </button>
-                        <button onclick="openConfigModal('protocolos')" class="bg-purple-500 text-white p-4 rounded-lg hover:bg-purple-600">
+                        <button onclick="openConfigModal('protocolos')"
+                            class="bg-purple-500 text-white p-4 rounded-lg hover:bg-purple-600">
                             <div class="text-2xl mb-2">📋</div>
                             <div class="text-sm">Protocolos</div>
                         </button>
-                        <button onclick="openConfigModal('medicacoes')" class="bg-teal-500 text-white p-4 rounded-lg hover:bg-teal-600">
+                        <button onclick="openConfigModal('medicacoes')"
+                            class="bg-teal-500 text-white p-4 rounded-lg hover:bg-teal-600">
                             <div class="text-2xl mb-2">💊</div>
                             <div class="text-sm">Medicações</div>
                         </button>
                     </div>
-                    
+
                     <div class="bg-gray-50 p-4 rounded mb-6">
                         <h3 class="font-bold mb-3">💾 Backup e Restauração</h3>
                         <div class="flex space-x-2">
-                            <button id="backupBtn" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">📥 Fazer Backup</button>
-                            <button id="restoreBtn" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">📤 Restaurar Dados</button>
+                            <button id="backupBtn"
+                                class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">📥 Fazer
+                                Backup</button>
+                            <button id="restoreBtn"
+                                class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">📤 Restaurar
+                                Dados</button>
                             <input type="file" id="restoreFile" accept=".json" class="hidden">
                         </div>
                     </div>
@@ -459,8 +544,10 @@
                     <div class="mb-4 p-4 bg-gray-50 rounded">
                         <h3 class="font-bold mb-2">Adicionar Novo</h3>
                         <div id="protocolForm" class="hidden space-y-3">
-                            <input type="text" id="protocolName" placeholder="Nome do protocolo" class="w-full px-3 py-2 border rounded" oninput="this.value = capitalizeWords(this.value)">
-                            <input type="number" id="protocolSessions" placeholder="Número de sessões" min="1" class="w-full px-3 py-2 border rounded">
+                            <input type="text" id="protocolName" placeholder="Nome do protocolo"
+                                class="w-full px-3 py-2 border rounded" oninput="this.value = capitalizeWords(this.value)">
+                            <input type="number" id="protocolSessions" placeholder="Número de sessões" min="1"
+                                class="w-full px-3 py-2 border rounded">
                             <select id="protocolFrequency" class="w-full px-3 py-2 border rounded">
                                 <option value="">Selecione a frequência</option>
                                 <option value="semanal">Semanal</option>
@@ -470,26 +557,37 @@
                             </select>
                             <div id="mixedFrequencyOptions" class="hidden space-y-2">
                                 <div class="grid grid-cols-3 gap-2">
-                                    <input type="number" id="weeklyCount" placeholder="Semanais" min="0" class="px-3 py-2 border rounded">
-                                    <input type="number" id="biweeklyCount" placeholder="Quinzenais" min="0" class="px-3 py-2 border rounded">
-                                    <input type="number" id="monthlyCount" placeholder="Mensais" min="0" class="px-3 py-2 border rounded">
+                                    <input type="number" id="weeklyCount" placeholder="Semanais" min="0"
+                                        class="px-3 py-2 border rounded">
+                                    <input type="number" id="biweeklyCount" placeholder="Quinzenais" min="0"
+                                        class="px-3 py-2 border rounded">
+                                    <input type="number" id="monthlyCount" placeholder="Mensais" min="0"
+                                        class="px-3 py-2 border rounded">
                                 </div>
                             </div>
-                            <button onclick="addProtocol()" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 w-full">Adicionar Protocolo</button>
+                            <button onclick="addProtocol()"
+                                class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 w-full">Adicionar
+                                Protocolo</button>
                         </div>
                         <div id="medicationForm" class="hidden space-y-3">
-                            <input type="text" id="medicationName" placeholder="Nome da medicação" class="w-full px-3 py-2 border rounded" oninput="this.value = capitalizeWords(this.value)">
+                            <input type="text" id="medicationName" placeholder="Nome da medicação"
+                                class="w-full px-3 py-2 border rounded" oninput="this.value = capitalizeWords(this.value)">
                             <input type="text" id="medicationRef" placeholder="Ref." class="w-full px-3 py-2 border rounded">
-                            <input type="text" id="medicationLote" placeholder="Número do lote" class="w-full px-3 py-2 border rounded">
+                            <input type="text" id="medicationLote" placeholder="Número do lote"
+                                class="w-full px-3 py-2 border rounded">
                             <input type="date" id="medicationValidade" class="w-full px-3 py-2 border rounded">
-                            <button onclick="addMedication()" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 w-full">Adicionar Medicação</button>
+                            <button onclick="addMedication()"
+                                class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 w-full">Adicionar
+                                Medicação</button>
                         </div>
                         <div id="regularForm" class="flex space-x-2">
-                            <input type="text" id="newItemInput" placeholder="Nome do item" class="flex-1 px-3 py-2 border rounded" oninput="this.value = capitalizeWords(this.value)">
-                            <button onclick="addConfigItem()" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Adicionar</button>
+                            <input type="text" id="newItemInput" placeholder="Nome do item"
+                                class="flex-1 px-3 py-2 border rounded" oninput="this.value = capitalizeWords(this.value)">
+                            <button onclick="addConfigItem()"
+                                class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Adicionar</button>
                         </div>
                     </div>
-                    
+
                     <div id="configItemsList" class="space-y-2">
                     </div>
                 </div>
@@ -508,20 +606,27 @@
                 </div>
                 <div class="p-4">
                     <div id="patientInfo" class="bg-gray-50 p-4 rounded mb-4"></div>
-                    
+
                     <div class="flex flex-wrap gap-2 mb-4">
-                        <button id="addSessionBtn" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">+ Sessão Avulsa</button>
-                        <button id="finishTreatmentBtn" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">Finalizar Tratamento</button>
-                        <button id="reopenTreatmentBtn" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 hidden">Reabrir Tratamento</button>
-                        <button onclick="printTreatmentSummary()" class="bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600">🖨️ Imprimir Resumo</button>
+                        <button id="addSessionBtn"
+                            class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">+ Sessão Avulsa</button>
+                        <button id="finishTreatmentBtn"
+                            class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">Finalizar
+                            Tratamento</button>
+                        <button id="reopenTreatmentBtn"
+                            class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 hidden">Reabrir
+                            Tratamento</button>
+                        <button onclick="printTreatmentSummary()"
+                            class="bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600">🖨️ Imprimir
+                            Resumo</button>
                     </div>
-                    
+
                     <div id="sessionsList" class="space-y-3"></div>
                 </div>
             </div>
         </div>
     </div>
-    
+
     <div id="reportModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
         <div class="flex items-center justify-center min-h-screen p-4">
             <div class="bg-white rounded-lg shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-y-auto">
@@ -529,8 +634,10 @@
                     <div class="flex items-center justify-between">
                         <h2 class="text-xl font-bold" id="reportModalTitle">📊 Relatório</h2>
                         <div class="space-x-2">
-                            <button onclick="printReportContent()" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">🖨️ Imprimir</button>
-                            <button onclick="exportToExcel()" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">📊 Excel</button>
+                            <button onclick="printReportContent()"
+                                class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">🖨️ Imprimir</button>
+                            <button onclick="exportToExcel()"
+                                class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">📊 Excel</button>
                             <button onclick="closeReportModal()" class="text-gray-400 hover:text-gray-600 text-2xl">×</button>
                         </div>
                     </div>
@@ -541,14 +648,15 @@
             </div>
         </div>
     </div>
-    
+
     <div id="reavaliacaoModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 no-print">
         <div class="flex items-center justify-center min-h-screen p-4">
             <div class="bg-white rounded-lg shadow-2xl max-w-xl w-full max-h-96 overflow-y-auto">
                 <div class="p-4 border-b">
                     <div class="flex items-center justify-between">
                         <h2 class="text-xl font-bold">Pacientes para Reavaliação</h2>
-                        <button onclick="document.getElementById('reavaliacaoModal').classList.add('hidden')" class="text-gray-400 hover:text-gray-600 text-2xl">×</button>
+                        <button onclick="document.getElementById('reavaliacaoModal').classList.add('hidden')"
+                            class="text-gray-400 hover:text-gray-600 text-2xl">×</button>
                     </div>
                 </div>
                 <div class="p-4">
@@ -565,15 +673,19 @@
                 <div class="p-4 border-b">
                     <div class="flex items-center justify-between">
                         <h2 class="text-xl font-bold">Reabrir Sessão</h2>
-                        <button onclick="document.getElementById('passwordModal').classList.add('hidden')" class="text-gray-400 hover:text-gray-600 text-2xl">×</button>
+                        <button onclick="document.getElementById('passwordModal').classList.add('hidden')"
+                            class="text-gray-400 hover:text-gray-600 text-2xl">×</button>
                     </div>
                 </div>
                 <div class="p-4">
                     <p class="text-gray-600 mb-4">Para reabrir esta sessão, digite a senha de administrador.</p>
-                    <input type="password" id="passwordInput" placeholder="Digite a senha..." class="w-full px-3 py-2 border rounded mb-4">
+                    <input type="password" id="passwordInput" placeholder="Digite a senha..."
+                        class="w-full px-3 py-2 border rounded mb-4">
                     <div class="flex justify-end space-x-2">
-                        <button id="cancelPasswordBtn" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">Cancelar</button>
-                        <button id="confirmPasswordBtn" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Confirmar</button>
+                        <button id="cancelPasswordBtn"
+                            class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">Cancelar</button>
+                        <button id="confirmPasswordBtn"
+                            class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Confirmar</button>
                     </div>
                 </div>
             </div>
@@ -583,7 +695,7 @@
     <script>
         // UUID generator
         function generateUUID() {
-            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
                 var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
                 return v.toString(16);
             });
@@ -593,13 +705,13 @@
         class DataManager {
             constructor() {
                 this.db = firebase.firestore();
-                this.data = { 
-                    pacientes: [], 
+                this.data = {
+                    pacientes: [],
                     configData: {
-                        medicos: {}, 
-                        profissionais: {}, 
-                        procedimentos: {}, 
-                        protocolos: {}, 
+                        medicos: {},
+                        profissionais: {},
+                        procedimentos: {},
+                        protocolos: {},
                         medicacoes: {}
                     }
                 };
@@ -612,14 +724,17 @@
 
                 // Ouve por mudanças nos pacientes
                 this.unsubscribes.pacientes = this.db.collection('pacientes').onSnapshot(snapshot => {
-                    this.data.pacientes = snapshot.docs.map(doc => ({ ...doc.data(), pacienteId: doc.id }));
+                    this.data.pacientes = snapshot.docs.map(doc => ({
+                        ...doc.data(),
+                        pacienteId: doc.id
+                    }));
                     this.data.pacientes = this.data.pacientes.map(p => this.migratePacienteData(p));
                     refreshUI();
                 }, err => {
                     console.error('Erro ao sincronizar dados do Firebase:', err);
                     showNotification('Erro ao sincronizar dados com o servidor.', true);
                 });
-                
+
                 // Ouve por mudanças nas configurações (medicos, profissionais, etc.)
                 const configCollections = ['medicos', 'profissionais', 'procedimentos', 'protocolos', 'medicacoes'];
                 for (const collection of configCollections) {
@@ -633,12 +748,12 @@
             }
 
             stopSync() {
-              for (const key in this.unsubscribes) {
-                if (this.unsubscribes[key]) {
-                  this.unsubscribes[key]();
+                for (const key in this.unsubscribes) {
+                    if (this.unsubscribes[key]) {
+                        this.unsubscribes[key]();
+                    }
                 }
-              }
-              this.unsubscribes = {};
+                this.unsubscribes = {};
             }
 
             migratePacienteData(paciente) {
@@ -658,7 +773,9 @@
 
             async addPaciente(paciente) {
                 const newDocRef = this.db.collection('pacientes').doc();
-                await newDocRef.set({ ...paciente, pacienteId: newDocRef.id });
+                await newDocRef.set({ ...paciente,
+                    pacienteId: newDocRef.id
+                });
                 showNotification('Paciente cadastrado no Firebase!');
             }
 
@@ -669,15 +786,36 @@
 
             async addConfigItem(type, item) {
                 const id = generateUUID();
-                const newItems = { ...this.data.configData[type], [id]: { ...item, id } };
-                await this.db.collection('config').doc(type).set({ items: newItems });
+                const newItems = { ...this.data.configData[type],
+                    [id]: { ...item,
+                        id
+                    }
+                };
+                await this.db.collection('config').doc(type).set({
+                    items: newItems
+                });
                 showNotification('Item adicionado!');
             }
 
+            async updateMedicationStatus(id, newStatus) {
+                const newItems = { ...this.data.configData.medicacoes
+                };
+                if (newItems[id]) {
+                    newItems[id].ativo = newStatus;
+                    await this.db.collection('config').doc('medicacoes').set({
+                        items: newItems
+                    });
+                    showNotification(`Medicação ${newStatus ? 'ativada' : 'desativada'}!`);
+                }
+            }
+
             async deleteConfigItem(type, id) {
-                const newItems = { ...this.data.configData[type] };
+                const newItems = { ...this.data.configData[type]
+                };
                 delete newItems[id];
-                await this.db.collection('config').doc(type).set({ items: newItems });
+                await this.db.collection('config').doc(type).set({
+                    items: newItems
+                });
                 showNotification('Item excluído!');
             }
 
@@ -687,16 +825,20 @@
                 const session = paciente.cronograma.find(s => s.sessionId === sessionId);
                 if (!session) return;
                 session[field] = value;
-                await this.db.collection('pacientes').doc(pacienteId).update({ cronograma: paciente.cronograma });
+                await this.db.collection('pacientes').doc(pacienteId).update({
+                    cronograma: paciente.cronograma
+                });
             }
 
             async addSession(pacienteId, sessionData) {
                 const paciente = this.getPacienteById(pacienteId);
                 if (!paciente) return;
-                
-                paciente.cronograma.push({ ...sessionData, sessionId: generateUUID() });
+
+                paciente.cronograma.push({ ...sessionData,
+                    sessionId: generateUUID()
+                });
                 paciente.totalSessoes++;
-                await this.db.collection('pacientes').doc(pacienteId).update({ 
+                await this.db.collection('pacientes').doc(pacienteId).update({
                     cronograma: paciente.cronograma,
                     totalSessoes: paciente.totalSessoes
                 });
@@ -707,7 +849,9 @@
                 const paciente = this.getPacienteById(pacienteId);
                 if (!paciente) return;
 
-                const updateData = { status: newStatus };
+                const updateData = {
+                    status: newStatus
+                };
                 if (newStatus === 'finalizado') {
                     const lastSession = paciente.cronograma.find(s => s.status === 'finalizada');
                     if (lastSession) {
@@ -718,20 +862,31 @@
                     updateData.dataReavaliacao = null;
                     updateData.dataUltimaSessao = null;
                 }
-                
+
                 await this.db.collection('pacientes').doc(pacienteId).update(updateData);
             }
 
-            getPacientes() { return this.data.pacientes; }
-            getConfigData() { return this.data.configData; }
-            getPacienteById(id) { return this.data.pacientes.find(p => p.pacienteId === id); }
+            getPacientes() {
+                return this.data.pacientes;
+            }
+            getConfigData() {
+                return this.data.configData;
+            }
+            getPacienteById(id) {
+                return this.data.pacientes.find(p => p.pacienteId === id);
+            }
             getSessionById(pacienteId, sessionId) {
                 const paciente = this.getPacienteById(pacienteId);
                 return paciente ? paciente.cronograma.find(s => s.sessionId === sessionId) : null;
             }
             getConfigItem(type, id) {
                 const item = this.data.configData[type] ? this.data.configData[type][id] : null;
-                return item ? { id: item.id, nome: item.nome, displayName: item.displayName, ...item } : null;
+                return item ? {
+                    id: item.id,
+                    nome: item.nome,
+                    displayName: item.displayName,
+                    ...item
+                } : null;
             }
             getConfigArray(type) {
                 return Object.values(this.data.configData[type] || {}).sort((a, b) => {
@@ -795,15 +950,19 @@
         function renderCalendar() {
             const weekEnd = new Date(currentWeekStart);
             weekEnd.setDate(weekEnd.getDate() + 6);
-            
-            document.getElementById('weekRange').textContent = 
+
+            document.getElementById('weekRange').textContent =
                 `${currentWeekStart.toLocaleDateString('pt-BR')} - ${weekEnd.toLocaleDateString('pt-BR')}`;
-            
+
             const calendarDays = document.getElementById('calendarDays');
             calendarDays.innerHTML = '';
-            
-            const allSessions = dataManager.getPacientes().flatMap(p => 
-                p.cronograma.map(s => ({ ...s, pacienteId: p.pacienteId, pacienteNome: p.nome }))
+
+            const allSessions = dataManager.getPacientes().flatMap(p =>
+                p.cronograma.map(s => ({
+                    ...s,
+                    pacienteId: p.pacienteId,
+                    pacienteNome: p.nome
+                }))
             );
 
             const todayStr = new Date().toISOString().split('T')[0];
@@ -812,8 +971,8 @@
                 const day = new Date(currentWeekStart);
                 day.setDate(day.getDate() + i);
                 const dayStr = day.toISOString().split('T')[0];
-                const daySessions = allSessions.filter(s => s.data === dayStr).sort((a,b) => (a.horario || '').localeCompare(b.horario || ''));
-                
+                const daySessions = allSessions.filter(s => s.data === dayStr).sort((a, b) => (a.horario || '').localeCompare(b.horario || ''));
+
                 const isToday = dayStr === todayStr;
                 const dayClasses = `
                     relative min-h-[120px] p-2 rounded-lg transition-all duration-200
@@ -822,23 +981,24 @@
 
                 const dayDiv = document.createElement('div');
                 dayDiv.className = dayClasses;
-                
+
                 let dayContent = `
                     <div class="font-bold text-sm mb-2 text-center text-gray-800">${day.getDate()}</div>
                 `;
-                
+
                 daySessions.forEach(session => {
                     const statusColorClass = {
                         'agendada': 'bg-blue-200 text-blue-800',
                         'finalizada': 'bg-green-200 text-green-800',
                         'reavaliacao': 'bg-red-200 text-red-800'
                     }[session.status] || 'bg-gray-200 text-gray-800';
-                    
+
                     const procedimento = dataManager.getConfigItem('procedimentos', session.procedimento)?.nome || 'Sem procedimento';
-                    
+
                     dayContent += `
                         <div class="text-xs p-1 mb-1 rounded-md cursor-pointer hover:opacity-80 transition-opacity ${statusColorClass}" 
-                            title="${session.pacienteNome} - ${session.horario || 'Sem horário'} - ${procedimento}"
+                            
+="${session.pacienteNome} - ${session.horario || 'Sem horário'} - ${procedimento}"
                             onclick="openSessionModal('${session.pacienteId}')">
                             <span class="font-semibold">${session.horario || 'S/H'}</span> -
                             <span>${session.pacienteNome.split(' ')[0]}</span><br>
@@ -846,12 +1006,12 @@
                         </div>
                     `;
                 });
-                
+
                 dayDiv.innerHTML = dayContent;
                 calendarDays.appendChild(dayDiv);
             }
         }
-        
+
         function renderPacientes() {
             const container = document.getElementById('listaPacientes');
             container.innerHTML = '';
@@ -860,23 +1020,23 @@
             const dateFilterStart = document.getElementById('dateFilterStart').value;
             const dateFilterEnd = document.getElementById('dateFilterEnd').value;
             const statusFilter = document.getElementById('statusFilter').value;
-            
+
             filteredPacientes = dataManager.getPacientes().filter(paciente => {
                 const matchesName = paciente.nome.toLowerCase().includes(searchTerm);
-                
+
                 if (!dateFilterStart && !dateFilterEnd && (statusFilter === 'todas' || !statusFilter)) {
                     return matchesName;
                 }
-                
+
                 const hasMatchingSession = (paciente.cronograma || []).some(sessao => {
                     const sessionDate = sessao.data;
-                    const matchesDateRange = (!dateFilterStart || sessionDate >= dateFilterStart) && 
-                                             (!dateFilterEnd || sessionDate <= dateFilterEnd);
+                    const matchesDateRange = (!dateFilterStart || sessionDate >= dateFilterStart) &&
+                        (!dateFilterEnd || sessionDate <= dateFilterEnd);
                     const matchesStatus = statusFilter === 'todas' || sessao.status === statusFilter;
-                    
+
                     return matchesDateRange && matchesStatus;
                 });
-                
+
                 return matchesName && hasMatchingSession;
             });
 
@@ -893,7 +1053,7 @@
                 const medico = dataManager.getConfigItem('medicos', paciente.medico)?.nome || 'N/A';
 
                 const sessionsLeft = paciente.totalSessoes - finalizadas;
-                const warningAlert = sessionsLeft === 1 && paciente.status !== 'finalizado' ? 
+                const warningAlert = sessionsLeft === 1 && paciente.status !== 'finalizado' ?
                     '<div class="bg-orange-100 border border-orange-400 text-orange-700 px-3 py-2 rounded text-sm mt-2">⚠️ Falta apenas 1 sessão para finalizar o tratamento!</div>' : '';
 
                 const isReavaliacaoNeeded = paciente.status === 'finalizado' && !paciente.dataReavaliacao;
@@ -913,7 +1073,7 @@
                         <input type="date" value="${paciente.dataReavaliacao}" onchange="updateReavaliacaoDate('${paciente.pacienteId}', this.value)" class="mt-1 px-2 py-1 border rounded text-xs text-black w-full">
                     </div>
                 ` : '';
-                
+
                 const div = document.createElement('div');
                 div.className = `${statusColor} border rounded-lg p-4 paciente-item`;
                 div.innerHTML = `
@@ -944,15 +1104,24 @@
         }
 
         function updateDropdowns() {
-            const dropdowns = [
-                { id: 'medicoInput', data: dataManager.getConfigArray('medicos'), placeholder: 'Selecione o médico' },
-                { id: 'protocoloInput', data: dataManager.getConfigArray('protocolos'), placeholder: 'Selecione o protocolo' }
-            ];
+            const dropdowns = [{
+                id: 'medicoInput',
+                data: dataManager.getConfigArray('medicos'),
+                placeholder: 'Selecione o médico'
+            }, {
+                id: 'protocoloInput',
+                data: dataManager.getConfigArray('protocolos'),
+                placeholder: 'Selecione o protocolo'
+            }];
 
-            dropdowns.forEach(({ id, data, placeholder }) => {
+            dropdowns.forEach(({
+                id,
+                data,
+                placeholder
+            }) => {
                 const select = document.getElementById(id);
                 if (select) {
-                    select.innerHTML = `<option value="">${placeholder}</option>` + 
+                    select.innerHTML = `<option value="">${placeholder}</option>` +
                         data.map(item => `<option value="${item.id}">${item.nome}</option>`).join('');
                 }
             });
@@ -963,23 +1132,30 @@
         document.getElementById('relatoriosTab').onclick = () => switchTab('relatorios');
         document.getElementById('configTab').onclick = () => switchTab('config');
 
-        document.getElementById('prevWeek').onclick = () => { 
-            currentWeekStart.setDate(currentWeekStart.getDate() - 7); 
-            refreshUI(); 
+        document.getElementById('prevWeek').onclick = () => {
+            currentWeekStart.setDate(currentWeekStart.getDate() - 7);
+            refreshUI();
         };
-        document.getElementById('nextWeek').onclick = () => { 
-            currentWeekStart.setDate(currentWeekStart.getDate() + 7); 
-            refreshUI(); 
+        document.getElementById('nextWeek').onclick = () => {
+            currentWeekStart.setDate(currentWeekStart.getDate() + 7);
+            refreshUI();
         };
-        document.getElementById('currentWeek').onclick = () => { 
-            currentWeekStart = new Date(); 
-            currentWeekStart.setDate(currentWeekStart.getDate() - currentWeekStart.getDay()); 
-            refreshUI(); 
+        document.getElementById('currentWeek').onclick = () => {
+            currentWeekStart = new Date();
+            currentWeekStart.setDate(currentWeekStart.getDate() - currentWeekStart.getDay());
+            refreshUI();
         };
 
-        document.getElementById('novoPacienteBtn').onclick = () => { document.getElementById('novoPacienteForm').classList.toggle('hidden'); };
-        document.getElementById('cancelarPaciente').onclick = () => { document.getElementById('novoPacienteForm').classList.add('hidden'); clearForm(); };
-        document.getElementById('procurarPacienteBtn').onclick = () => { document.getElementById('procurarPacienteForm').classList.toggle('hidden'); };
+        document.getElementById('novoPacienteBtn').onclick = () => {
+            document.getElementById('novoPacienteForm').classList.toggle('hidden');
+        };
+        document.getElementById('cancelarPaciente').onclick = () => {
+            document.getElementById('novoPacienteForm').classList.add('hidden');
+            clearForm();
+        };
+        document.getElementById('procurarPacienteBtn').onclick = () => {
+            document.getElementById('procurarPacienteForm').classList.toggle('hidden');
+        };
 
         document.getElementById('searchInput').oninput = refreshUI;
         document.getElementById('dateFilterStart').onchange = refreshUI;
@@ -993,11 +1169,19 @@
             currentPage = 1;
             refreshUI();
         };
-        
-        document.getElementById('prevPage').onclick = () => { if (currentPage > 1) { currentPage--; refreshUI(); } };
-        document.getElementById('nextPage').onclick = () => { 
+
+        document.getElementById('prevPage').onclick = () => {
+            if (currentPage > 1) {
+                currentPage--;
+                refreshUI();
+            }
+        };
+        document.getElementById('nextPage').onclick = () => {
             const totalPages = Math.ceil(filteredPacientes.length / itemsPerPage);
-            if (currentPage < totalPages) { currentPage++; refreshUI(); }
+            if (currentPage < totalPages) {
+                currentPage++;
+                refreshUI();
+            }
         };
 
         document.getElementById('salvarPaciente').onclick = async () => {
@@ -1020,11 +1204,16 @@
             const cronograma = generateSchedule(inicio, protocolo);
 
             await dataManager.addPaciente({
-                nome, medico: medicoId, protocolo: protocoloId, tipo, inicio, cronograma,
+                nome,
+                medico: medicoId,
+                protocolo: protocoloId,
+                tipo,
+                inicio,
+                cronograma,
                 totalSessoes: protocolo.sessoes,
                 status: 'ativo'
             });
-            
+
             document.getElementById('novoPacienteForm').classList.add('hidden');
             clearForm();
         };
@@ -1038,8 +1227,11 @@
         function openSessionModal(pacienteId) {
             currentPatientId = pacienteId;
             const paciente = dataManager.getPacienteById(pacienteId);
-            if (!paciente) { showNotification('Paciente não encontrado!', true); return; }
-            
+            if (!paciente) {
+                showNotification('Paciente não encontrado!', true);
+                return;
+            }
+
             const finalizadas = (paciente.cronograma || []).filter(s => s.status === 'finalizada').length;
             const progress = Math.round((finalizadas / paciente.totalSessoes) * 100) || 0;
             const protocolo = dataManager.getConfigItem('protocolos', paciente.protocolo)?.nome || 'N/A';
@@ -1051,10 +1243,10 @@
                 <p class="text-sm text-gray-600">${medico} • ${paciente.tipo} • ${protocolo}</p>
                 <p class="text-sm">Progresso: ${finalizadas}/${paciente.totalSessoes} sessões finalizadas (${progress}%) • Status: ${paciente.status || 'ativo'}</p>
             `;
-            
+
             document.getElementById('finishTreatmentBtn').classList.toggle('hidden', paciente.status === 'finalizado');
             document.getElementById('reopenTreatmentBtn').classList.toggle('hidden', paciente.status !== 'finalizado');
-            
+
             renderSessionsList();
             document.getElementById('sessionModal').classList.remove('hidden');
         }
@@ -1070,31 +1262,37 @@
             container.innerHTML = '';
             const paciente = dataManager.getPacienteById(currentPatientId);
             if (!paciente) return;
-            
+
             const timeSlots = [];
             for (let hour = 8; hour < 20; hour++) {
                 timeSlots.push(`${hour.toString().padStart(2, '0')}:00`);
-                if (hour < 19) { timeSlots.push(`${hour.toString().padStart(2, '0')}:30`); }
+                if (hour < 19) {
+                    timeSlots.push(`${hour.toString().padStart(2, '0')}:30`);
+                }
             }
             const professionalOptions = dataManager.getConfigArray('profissionais').map(p => `<option value="${p.id}">${p.nome}</option>`).join('');
             const procedimentoOptions = dataManager.getConfigArray('procedimentos').map(p => `<option value="${p.id}">${p.nome}</option>`).join('');
-            const medicationOptions = dataManager.getConfigArray('medicacoes').map(m => `<option value="${m.id}">${m.displayName || m.nome}</option>`).join('');
+            const medicationOptions = dataManager.getConfigArray('medicacoes').filter(m => m.ativo !== false).map(m => `<option value="${m.id}">${m.displayName || m.nome}</option>`).join('');
 
             (paciente.cronograma || []).forEach(sessao => {
                 const sessionHtml = createSessionHtml(paciente, sessao, timeSlots, professionalOptions, procedimentoOptions, medicationOptions);
                 container.appendChild(sessionHtml);
             });
         }
-        
+
         function createSessionHtml(paciente, sessao, timeSlots, professionalOptions, procedimentoOptions, medicationOptions) {
             const div = document.createElement('div');
             div.className = 'bg-gray-50 border rounded p-4';
             const isFinalizada = sessao.status === 'finalizada';
             const isFinalized = paciente.status === 'finalizado';
-            const isReadOnly = isFinalizada || isFinalized; 
-            
-            const statusColors = { 'agendada': '#2563eb', 'finalizada': '#16a34a', 'reavaliacao': '#dc2626' };
-            
+            const isReadOnly = isFinalizada || isFinalized;
+
+            const statusColors = {
+                'agendada': '#2563eb',
+                'finalizada': '#16a34a',
+                'reavaliacao': '#dc2626'
+            };
+
             const requiredFieldsFilled = [sessao.data, sessao.horario, sessao.profissional, sessao.procedimento].every(field => field);
             const isMedNecessarioSim = sessao.medicamento_necessario === 'sim';
             const requiredMedicationFilled = !isMedNecessarioSim || (isMedNecessarioSim && sessao.medicamento_descricao && sessao.medicamento_descricao.trim() !== '');
@@ -1103,11 +1301,11 @@
 
             let medicationsHtml = '';
             const hasMedications = (sessao.medicacoes && sessao.medicacoes.length > 0);
-            
+
             const isMedicationSectionReadOnly = isFinalizada || isFinalized;
 
             if (isMedicationSectionReadOnly) {
-                 medicationsHtml = `
+                medicationsHtml = `
                      <div class="mb-4">
                          <label class="block text-sm font-medium mb-2">Medicações:</label>
                          <div class="space-y-1">
@@ -1151,12 +1349,12 @@
                     </div>
                 `;
             }
-            
+
             const medicamentoDescricaoHidden = sessao.medicamento_necessario === 'sim' ? '' : 'hidden';
 
-            const encerrarBtnHtml = canEncerrarSession
-                ? `<button onclick="encerrarSession('${sessao.sessionId}')" class="px-3 py-1 rounded text-sm text-white bg-blue-500 hover:bg-blue-600">Encerrar Sessão</button>`
-                : `<button disabled class="px-3 py-1 rounded text-sm text-white bg-gray-400 cursor-not-allowed" title="Preencha todos os campos obrigatórios para encerrar a sessão.">Encerrar Sessão</button>`;
+            const encerrarBtnHtml = canEncerrarSession ?
+                `<button onclick="encerrarSession('${sessao.sessionId}')" class="px-3 py-1 rounded text-sm text-white bg-blue-500 hover:bg-blue-600">Encerrar Sessão</button>` :
+                `<button disabled class="px-3 py-1 rounded text-sm text-white bg-gray-400 cursor-not-allowed" title="Preencha todos os campos obrigatórios para encerrar a sessão.">Encerrar Sessão</button>`;
 
             div.innerHTML = `
                 <div class="mb-3">
@@ -1265,7 +1463,7 @@
             const quedaIntensidadeDiv = document.getElementById(`quedaIntensidadeDiv-${sessionId}`);
             const session = dataManager.getSessionById(currentPatientId, sessionId);
             if (!session) return;
-            
+
             session.queda_presente = quedaPresenteSelect.value;
             if (quedaPresenteSelect.value === 'sim') {
                 quedaIntensidadeDiv.classList.remove('hidden');
@@ -1283,7 +1481,7 @@
             const medicamentoDescricaoDiv = document.getElementById(`medicamentoDescricaoDiv-${sessionId}`);
             const session = dataManager.getSessionById(currentPatientId, sessionId);
             if (!session) return;
-            
+
             session.medicamento_necessario = medicamentoNecessarioSelect.value;
             if (medicamentoNecessarioSelect.value === 'sim') {
                 medicamentoDescricaoDiv.classList.remove('hidden');
@@ -1295,32 +1493,32 @@
             await dataManager.updateSession(currentPatientId, sessionId, 'medicamento_descricao', session.medicamento_descricao);
             renderSessionsList();
         }
-        
+
         async function encerrarSession(sessionId) {
             const paciente = dataManager.getPacienteById(currentPatientId);
             if (!paciente) return;
             const session = paciente.cronograma.find(s => s.sessionId === sessionId);
             if (!session) return;
-            
+
             if (confirm('Tem certeza que deseja encerrar esta sessão?')) {
                 await dataManager.updateSession(currentPatientId, sessionId, 'status', 'finalizada');
                 renderSessionsList();
                 showNotification('Sessão encerrada!');
             }
         }
-        
+
         async function reabrirSessionWithPassword(sessionId) {
             const passwordModal = document.getElementById('passwordModal');
             const passwordInput = document.getElementById('passwordInput');
             const confirmPasswordBtn = document.getElementById('confirmPasswordBtn');
-            
+
             passwordInput.value = '';
             passwordModal.classList.remove('hidden');
-            
+
             const handleConfirm = async () => {
                 const password = passwordInput.value;
                 const correctPassword = '1970';
-            
+
                 if (password === correctPassword) {
                     const paciente = dataManager.getPacienteById(currentPatientId);
                     const session = paciente.cronograma.find(s => s.sessionId === sessionId);
@@ -1336,7 +1534,7 @@
                     passwordInput.value = '';
                 }
             };
-            
+
             confirmPasswordBtn.addEventListener('click', handleConfirm);
             document.getElementById('cancelPasswordBtn').onclick = () => {
                 passwordModal.classList.add('hidden');
@@ -1355,7 +1553,7 @@
         async function updateSession(sessionId, field, value) {
             const session = dataManager.getSessionById(currentPatientId, sessionId);
             if (!session) return;
-            
+
             const isTreatmentFinalized = dataManager.getPacienteById(currentPatientId).status === 'finalizado';
             const isSessionFinalizada = session.status === 'finalizada';
 
@@ -1364,7 +1562,7 @@
                 renderSessionsList();
                 return;
             }
-            
+
             await dataManager.updateSession(currentPatientId, sessionId, field, value);
             renderSessionsList();
         }
@@ -1372,39 +1570,44 @@
         async function addMedicationToSession(sessionId) {
             const medSelect = document.getElementById(`medSelect-${sessionId}`);
             const quantityInput = document.getElementById(`medQuantity-${sessionId}`);
-            
+
             const medicationId = medSelect.value;
             const quantity = parseFloat(quantityInput.value); // Converte o valor do input para número decimal
-            
+
             if (!medicationId || isNaN(quantity) || quantity <= 0) {
                 showNotification('Selecione uma medicação e digite uma quantidade válida!', true);
                 return;
             }
-            
+
             const paciente = dataManager.getPacienteById(currentPatientId);
             const session = paciente.cronograma.find(s => s.sessionId === sessionId);
             if (!session) return;
-            
-            if (!session.medicacoes) { 
-                session.medicacoes = []; 
+
+            if (!session.medicacoes) {
+                session.medicacoes = [];
             }
-            
+
             // Procura por uma medicação existente com o mesmo ID
             const existingMedication = session.medicacoes.find(m => m.medicationId === medicationId);
-            
+
             if (existingMedication) {
                 // Converte a quantidade existente para decimal antes de somar
                 existingMedication.quantidade = parseFloat(existingMedication.quantidade) + quantity;
             } else {
                 // Se a medicação não existe, adiciona uma nova entrada
-                session.medicacoes.push({ medicationId, quantidade: quantity });
+                session.medicacoes.push({
+                    medicationId,
+                    quantidade: quantity
+                });
             }
-            
+
             // Limpa os campos de input após adicionar
             medSelect.value = '';
             quantityInput.value = '';
 
-            await dataManager.db.collection('pacientes').doc(currentPatientId).update({ cronograma: paciente.cronograma });
+            await dataManager.db.collection('pacientes').doc(currentPatientId).update({
+                cronograma: paciente.cronograma
+            });
             renderSessionsList();
         }
 
@@ -1412,9 +1615,11 @@
             const paciente = dataManager.getPacienteById(currentPatientId);
             const session = paciente.cronograma.find(s => s.sessionId === sessionId);
             if (!session) return;
-            
+
             session.medicacoes = session.medicacoes.filter(m => m.medicationId !== medicationId);
-            await dataManager.db.collection('pacientes').doc(currentPatientId).update({ cronograma: paciente.cronograma });
+            await dataManager.db.collection('pacientes').doc(currentPatientId).update({
+                cronograma: paciente.cronograma
+            });
             renderSessionsList();
         }
 
@@ -1422,12 +1627,12 @@
             const paciente = dataManager.getPacienteById(currentPatientId);
             if (!paciente) return;
             const session = paciente.cronograma.find(s => s.sessionId === sessionId);
-            
+
             if (session.status === 'finalizada') {
                 showNotification('Não é possível excluir uma sessão finalizada. Reabra a sessão para editar.', true);
                 return;
             }
-            
+
             if (confirm('Excluir esta sessão?')) {
                 paciente.cronograma = paciente.cronograma.filter(s => s.sessionId !== sessionId);
                 paciente.totalSessoes--;
@@ -1439,7 +1644,7 @@
                 showNotification('Sessão excluída!');
             }
         }
-        
+
         document.getElementById('addSessionBtn').onclick = async () => {
             const paciente = dataManager.getPacienteById(currentPatientId);
             if (!paciente) return;
@@ -1451,11 +1656,14 @@
                 newDate = new Date(year, month - 1, day);
                 newDate.setDate(newDate.getDate() + 7);
             }
-            
+
             await dataManager.addSession(currentPatientId, {
                 data: newDate.toISOString().split('T')[0],
                 status: 'agendada',
-                horario: '', profissional: '', procedimento: '', medicacoes: []
+                horario: '',
+                profissional: '',
+                procedimento: '',
+                medicacoes: []
             });
         };
 
@@ -1466,7 +1674,9 @@
                 const lastSession = paciente.cronograma.find(s => s.status === 'finalizada');
                 const dataUltimaSessao = lastSession ? lastSession.data : null;
                 await dataManager.updatePatientStatus(paciente.pacienteId, 'finalizado', null);
-                await dataManager.db.collection('pacientes').doc(paciente.pacienteId).update({ dataUltimaSessao });
+                await dataManager.db.collection('pacientes').doc(paciente.pacienteId).update({
+                    dataUltimaSessao
+                });
                 openSessionModal(currentPatientId);
                 showNotification('Tratamento finalizado! Reavaliação pendente.', false);
             }
@@ -1481,25 +1691,28 @@
                 showNotification('Tratamento reaberto!');
             }
         };
-        
+
         // --- Stats, Utils & Config Logic ---
         function updateStats() {
             const today = new Date();
             const todayStr = today.toISOString().split('T')[0];
             const currentMonth = today.getMonth();
             const currentYear = today.getFullYear();
-            const allSessions = dataManager.getPacientes().flatMap(p => 
-                p.cronograma.map(s => ({ ...s, pacienteId: p.pacienteId }))
+            const allSessions = dataManager.getPacientes().flatMap(p =>
+                p.cronograma.map(s => ({
+                    ...s,
+                    pacienteId: p.pacienteId
+                }))
             );
-            
+
             const currentMonthSessions = allSessions.filter(s => {
                 const sessionDate = new Date(s.data);
                 return sessionDate.getMonth() === currentMonth && sessionDate.getFullYear() === currentYear;
             });
-            
+
             const finalizadasThisMonth = currentMonthSessions.filter(s => s.status === 'finalizada');
             const patientsInTreatment = dataManager.getPacientes().filter(p => p.status !== 'finalizado').length;
-            
+
             const overdueSessions = allSessions.filter(s => {
                 const sessionDate = new Date(s.data + 'T00:00:00');
                 const todayMidnight = new Date(today.getFullYear(), today.getMonth(), today.getDate());
@@ -1507,20 +1720,26 @@
                 const isNotFinalized = s.status !== 'finalizada' && s.status !== 'reavaliacao';
                 return isOverdue && isNotFinalized;
             });
-            
+
             const pacientesPendentesReavaliacao = dataManager.getPacientes().filter(p => p.status === 'finalizado' && !p.dataReavaliacao).length;
-            
+
             document.getElementById('totalPacientes').textContent = dataManager.getPacientes().length;
             document.getElementById('pacientesComSessao').textContent = patientsInTreatment;
             document.getElementById('finalizadas').textContent = finalizadasThisMonth.length;
             document.getElementById('reavaliacaoPendentes').textContent = pacientesPendentesReavaliacao;
             document.getElementById('atrasadas').textContent = overdueSessions.length;
         }
-        
+
         function openConfigModal(type) {
             currentConfigType = type;
-            const titles = { medicos: '👨‍⚕️ Gerenciar Médicos', profissionais: '👩‍💼 Gerenciar Profissionais', procedimentos: '🔧 Gerenciar Procedimentos', protocolos: '📋 Gerenciar Protocolos', medicacoes: '💊 Gerenciar Medicações' };
-            
+            const titles = {
+                medicos: '👨‍⚕️ Gerenciar Médicos',
+                profissionais: '👩‍💼 Gerenciar Profissionais',
+                procedimentos: '💉 Gerenciar Procedimentos',
+                protocolos: '📋 Gerenciar Protocolos',
+                medicacoes: '💊 Gerenciar Medicações'
+            };
+
             document.getElementById('modalTitle').textContent = titles[type];
             document.getElementById('protocolForm').classList.toggle('hidden', type !== 'protocolos');
             document.getElementById('medicationForm').classList.toggle('hidden', type !== 'medicacoes');
@@ -1528,12 +1747,12 @@
             if (type !== 'protocolos' && type !== 'medicacoes') {
                 document.getElementById('newItemInput').placeholder = `Nome do ${type.slice(0, -1)}`;
             }
-            
+
             document.getElementById('configModal').classList.remove('hidden');
             renderConfigItems();
         }
 
-        document.getElementById('protocolFrequency').onchange = function() {
+        document.getElementById('protocolFrequency').onchange = function () {
             document.getElementById('mixedFrequencyOptions').classList.toggle('hidden', this.value !== 'mista');
         };
 
@@ -1541,24 +1760,39 @@
             const nome = document.getElementById('protocolName').value.trim();
             const sessoes = parseInt(document.getElementById('protocolSessions').value);
             const frequencia = document.getElementById('protocolFrequency').value;
-            
+
             if (!nome || isNaN(sessoes) || sessoes <= 0 || !frequencia) {
                 showNotification('Preencha todos os campos corretamente!', true);
                 return;
             }
-            if (dataManager.getConfigArray('protocolos').some(p => p.nome === nome)) { showNotification('Este protocolo já existe!', true); return; }
-            
-            let protocolData = { nome, sessoes, frequencia };
+            if (dataManager.getConfigArray('protocolos').some(p => p.nome === nome)) {
+                showNotification('Este protocolo já existe!', true);
+                return;
+            }
+
+            let protocolData = {
+                nome,
+                sessoes,
+                frequencia
+            };
             if (frequencia === 'mista') {
                 const semanais = parseInt(document.getElementById('weeklyCount').value) || 0;
                 const quinzenais = parseInt(document.getElementById('biweeklyCount').value) || 0;
                 const mensais = parseInt(document.getElementById('monthlyCount').value) || 0;
-                
-                if (semanais + quinzenais + mensais !== sessoes) { showNotification('A soma das sessões deve ser igual ao total!', true); return; }
-                protocolData = { ...protocolData, semanais, quinzenais, mensais };
+
+                if (semanais + quinzenais + mensais !== sessoes) {
+                    showNotification('A soma das sessões deve ser igual ao total!', true);
+                    return;
+                }
+                protocolData = {
+                    ...protocolData,
+                    semanais,
+                    quinzenais,
+                    mensais
+                };
             }
             await dataManager.addConfigItem('protocolos', protocolData);
-            
+
             document.getElementById('protocolForm').querySelectorAll('input, select').forEach(el => el.value = '');
             document.getElementById('mixedFrequencyOptions').classList.add('hidden');
         }
@@ -1568,20 +1802,35 @@
             const ref = document.getElementById('medicationRef').value.trim();
             const lote = document.getElementById('medicationLote').value.trim();
             const validade = document.getElementById('medicationValidade').value;
-            
-            if (!nome) { showNotification('Digite o nome da medicação!', true); return; }
-            
+
+            if (!nome) {
+                showNotification('Digite o nome da medicação!', true);
+                return;
+            }
+
             let displayName = nome;
             if (ref) displayName += ` Ref: ${ref}`;
             if (lote) displayName += ` Lote: ${lote}`;
-            if (validade) { displayName += ` Val: ${new Date(validade).toLocaleDateString('pt-BR')}`; }
+            if (validade) {
+                displayName += ` Val: ${new Date(validade).toLocaleDateString('pt-BR')}`;
+            }
 
-            if (dataManager.getConfigArray('medicacoes').some(med => med.displayName === displayName)) { showNotification('Esta medicação já existe!', true); return; }
-            
-            await dataManager.addConfigItem('medicacoes', { nome, ref, lote, validade, displayName });
+            if (dataManager.getConfigArray('medicacoes').some(med => med.displayName === displayName)) {
+                showNotification('Esta medicação já existe!', true);
+                return;
+            }
+
+            await dataManager.addConfigItem('medicacoes', {
+                nome,
+                ref,
+                lote,
+                validade,
+                displayName,
+                ativo: true
+            });
             document.getElementById('medicationForm').querySelectorAll('input').forEach(el => el.value = '');
         }
-        
+
         function closeConfigModal() {
             document.getElementById('configModal').classList.add('hidden');
         }
@@ -1589,21 +1838,41 @@
         async function addConfigItem() {
             const input = document.getElementById('newItemInput');
             const nome = input.value.trim();
-            if (!nome) { showNotification('Digite um nome válido!', true); return; }
-            if (dataManager.getConfigArray(currentConfigType).some(item => item.nome === nome)) { showNotification('Este item já existe!', true); return; }
-            
-            await dataManager.addConfigItem(currentConfigType, { nome });
+            if (!nome) {
+                showNotification('Digite um nome válido!', true);
+                return;
+            }
+            if (dataManager.getConfigArray(currentConfigType).some(item => item.nome === nome)) {
+                showNotification('Este item já existe!', true);
+                return;
+            }
+
+            await dataManager.addConfigItem(currentConfigType, {
+                nome
+            });
             input.value = '';
         }
 
         async function editConfigItem(id, newValue) {
             const item = dataManager.getConfigItem(currentConfigType, id);
-            if (!item || !newValue.trim()) { showNotification('Digite um nome válido!', true); return; }
-            
+            if (!item || !newValue.trim()) {
+                showNotification('Digite um nome válido!', true);
+                return;
+            }
+
             item.nome = newValue.trim();
-            const updatedItems = { ...dataManager.data.configData[currentConfigType], [id]: item };
-            await dataManager.db.collection('config').doc(currentConfigType).set({ items: updatedItems });
+            const updatedItems = { ...dataManager.data.configData[currentConfigType],
+                [id]: item
+            };
+            await dataManager.db.collection('config').doc(currentConfigType).set({
+                items: updatedItems
+            });
             showNotification('Item editado!');
+        }
+
+        async function toggleMedicationStatus(id, newStatus) {
+            await dataManager.updateMedicationStatus(id, newStatus);
+            renderConfigItems();
         }
 
         async function deleteConfigItem(id) {
@@ -1616,26 +1885,38 @@
             const container = document.getElementById('configItemsList');
             container.innerHTML = '';
             const items = dataManager.getConfigArray(currentConfigType);
-            
+
             items.forEach(item => {
                 const div = document.createElement('div');
-                div.className = 'flex items-center justify-between p-3 border rounded';
+                div.className = `flex items-center justify-between p-3 border rounded ${item.ativo === false ? 'bg-gray-200 text-gray-500' : ''}`;
                 if (currentConfigType === 'protocolos') {
                     div.innerHTML = `<div><strong>${item.nome}</strong><br><small class="text-gray-600">${item.sessoes} sessões - ${item.frequencia}</small></div>`;
                 } else if (currentConfigType === 'medicacoes') {
-                    div.innerHTML = `<div><strong>${item.displayName || item.nome}</strong></div>`;
+                    const statusText = item.ativo ? 'Ativa' : 'Inativa';
+                    const statusColor = item.ativo ? 'text-green-600' : 'text-red-600';
+                    const buttonText = item.ativo ? 'Desativar' : 'Ativar';
+                    const buttonClass = item.ativo ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600';
+                    div.innerHTML = `
+                        <div>
+                            <strong>${item.displayName || item.nome}</strong> 
+                            <span class="text-sm font-semibold ${statusColor}">(${statusText})</span>
+                        </div>
+                        <button onclick="toggleMedicationStatus('${item.id}', ${!item.ativo})" class="text-white px-3 py-1 rounded text-sm ${buttonClass}">${buttonText}</button>
+                    `;
                 } else {
                     div.innerHTML = `<input type="text" value="${item.nome}" class="flex-1 px-2 py-1 border rounded mr-2" oninput="this.value = capitalizeWords(this.value)" onblur="editConfigItem('${item.id}', this.value)" onkeypress="if(event.key==='Enter') editConfigItem('${item.id}', this.value)">`;
+                    div.innerHTML += `<button onclick="deleteConfigItem('${item.id}')" class="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600">Excluir</button>`;
                 }
-                
-                div.innerHTML += `<button onclick="deleteConfigItem('${item.id}')" class="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600">Excluir</button>`;
+
                 container.appendChild(div);
             });
         }
-        
+
         // --- Backup & Restore ---
         document.getElementById('backupBtn').onclick = () => {
-            const blob = new Blob([JSON.stringify(dataManager.data, null, 2)], { type: 'application/json' });
+            const blob = new Blob([JSON.stringify(dataManager.data, null, 2)], {
+                type: 'application/json'
+            });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
@@ -1645,7 +1926,9 @@
             showNotification('Backup realizado!');
         };
 
-        document.getElementById('restoreBtn').onclick = () => { document.getElementById('restoreFile').click(); };
+        document.getElementById('restoreBtn').onclick = () => {
+            document.getElementById('restoreFile').click();
+        };
 
         document.getElementById('restoreFile').onchange = (e) => {
             const file = e.target.files[0];
@@ -1657,8 +1940,12 @@
                         if (data.pacientes && data.configData) {
                             localStorage.setItem('tricomaster_data', e.target.result);
                             window.location.reload();
-                        } else { showNotification('Arquivo de backup inválido!', true); }
-                    } catch (error) { showNotification('Arquivo inválido!', true); }
+                        } else {
+                            showNotification('Arquivo de backup inválido!', true);
+                        }
+                    } catch (error) {
+                        showNotification('Arquivo inválido!', true);
+                    }
                 };
                 reader.readAsText(file);
             }
@@ -1668,29 +1955,34 @@
         function openReportForm(type) {
             let startDate, endDate;
             const today = new Date();
-            
+
             const lastMonth = new Date();
             lastMonth.setMonth(lastMonth.getMonth() - 1);
             startDate = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0];
             endDate = today.toISOString().split('T')[0];
-            
+
             document.getElementById('reportStartDate').value = startDate;
             document.getElementById('reportEndDate').value = endDate;
 
-            const titles = { 
-                sessoes: 'Relatório de Sessões', 
-                medicacoes: 'Relatório de Medicações', 
-                dashboard: 'Relatório Dashboard', 
+            const titles = {
+                sessoes: 'Relatório de Sessões',
+                medicacoes: 'Relatório de Medicações',
+                dashboard: 'Relatório Dashboard',
             };
             document.getElementById('reportFormTitle').textContent = titles[type];
             document.getElementById('sessionFilters').classList.toggle('hidden', type !== 'sessoes');
-            
+
             document.getElementById('reportForm').classList.remove('hidden');
             populateReportFilters();
         }
 
-        function closeReportForm() { document.getElementById('reportForm').classList.add('hidden'); }
-        function closeReportModal() { document.getElementById('reportModal').classList.add('hidden'); }
+        function closeReportForm() {
+            document.getElementById('reportForm').classList.add('hidden');
+        }
+
+        function closeReportModal() {
+            document.getElementById('reportModal').classList.add('hidden');
+        }
 
         function populateReportFilters() {
             const populateSelect = (id, data, placeholder) => {
@@ -1708,12 +2000,15 @@
             const startDate = document.getElementById('reportStartDate').value;
             const endDate = document.getElementById('reportEndDate').value;
             const reportType = document.getElementById('reportFormTitle').textContent;
-            
-            if (!startDate || !endDate) { showNotification('Selecione as datas inicial e final!', true); return; }
-            
+
+            if (!startDate || !endDate) {
+                showNotification('Selecione as datas inicial e final!', true);
+                return;
+            }
+
             let reportContent = '';
             let reportFiltersHtml = '';
-            
+
             const filters = {
                 'Período': `${new Date(startDate + 'T00:00:00').toLocaleDateString('pt-BR')} a ${new Date(endDate + 'T00:00:00').toLocaleDateString('pt-BR')}`
             };
@@ -1730,29 +2025,29 @@
                 const precisaMedicacao = document.getElementById('reportMedicamentoNecessario').value;
                 const reavaliacao = document.getElementById('reportReavaliacao').value;
 
-                if(pacienteId) filters['Paciente'] = dataManager.getPacienteById(pacienteId)?.nome;
-                if(medicoId) filters['Médico'] = dataManager.getConfigItem('medicos', medicoId)?.nome;
-                if(profissionalId) filters['Profissional'] = dataManager.getConfigItem('profissionais', profissionalId)?.nome;
-                if(protocoloId) filters['Protocolo'] = dataManager.getConfigItem('protocolos', protocoloId)?.nome;
-                if(tipo) filters['Tipo'] = tipo;
-                if(procedimentoId) filters['Procedimento'] = dataManager.getConfigItem('procedimentos', procedimentoId)?.nome;
-                if(status) filters['Status'] = status;
-                if(comQueda) filters['Com Queda'] = comQueda;
-                if(precisaMedicacao) filters['Precisa de Medicação'] = precisaMedicacao;
-                if(reavaliacao) filters['Reavaliação Agendada'] = reavaliacao;
-                
+                if (pacienteId) filters['Paciente'] = dataManager.getPacienteById(pacienteId)?.nome;
+                if (medicoId) filters['Médico'] = dataManager.getConfigItem('medicos', medicoId)?.nome;
+                if (profissionalId) filters['Profissional'] = dataManager.getConfigItem('profissionais', profissionalId)?.nome;
+                if (protocoloId) filters['Protocolo'] = dataManager.getConfigItem('protocolos', protocoloId)?.nome;
+                if (tipo) filters['Tipo'] = tipo;
+                if (procedimentoId) filters['Procedimento'] = dataManager.getConfigItem('procedimentos', procedimentoId)?.nome;
+                if (status) filters['Status'] = status;
+                if (comQueda) filters['Com Queda'] = comQueda;
+                if (precisaMedicacao) filters['Precisa de Medicação'] = precisaMedicacao;
+                if (reavaliacao) filters['Reavaliação Agendada'] = reavaliacao;
+
                 reportContent = generateSessionReport(startDate, endDate, filters);
             } else if (reportType.includes('Medicações')) {
                 reportContent = generateMedicationReport(startDate, endDate, filters);
             } else if (reportType.includes('Dashboard')) {
                 reportContent = generateDashboardReport(startDate, endDate, filters);
             }
-            
+
             const filtersArray = Object.entries(filters).filter(([, value]) => value);
             const orderedFilters = [
                 'Período', 'Paciente', 'Tipo', 'Protocolo', 'Procedimento', 'Profissional', 'Médico', 'Status', 'Com Queda', 'Precisa de Medicação', 'Reavaliação Agendada'
             ];
-            
+
             const filtersInOrder = orderedFilters.map(key => {
                 const filter = filtersArray.find(([k]) => k === key);
                 return filter ? `<div><strong>${filter[0]}:</strong> ${filter[1]}</div>` : '';
@@ -1771,8 +2066,15 @@
         }
 
         function generateSessionReport(startDate, endDate, filters) {
-            const allSessions = dataManager.getPacientes().flatMap(p => p.cronograma.map(s => ({ ...s, pacienteId: p.pacienteId, pacienteNome: p.nome, pacienteMedico: p.medico, pacienteProtocolo: p.protocolo, pacienteTipo: p.tipo })));
-            
+            const allSessions = dataManager.getPacientes().flatMap(p => p.cronograma.map(s => ({
+                ...s,
+                pacienteId: p.pacienteId,
+                pacienteNome: p.nome,
+                pacienteMedico: p.medico,
+                pacienteProtocolo: p.protocolo,
+                pacienteTipo: p.tipo
+            })));
+
             const filteredSessions = allSessions.filter(session => {
                 const paciente = dataManager.getPacienteById(session.pacienteId);
                 const isReavaliacao = filters['Reavaliação Agendada'] === 'sim' ? paciente.dataReavaliacao : filters['Reavaliação Agendada'] === 'nao' ? !paciente.dataReavaliacao : true;
@@ -1789,7 +2091,7 @@
                     (!filters['Precisa de Medicação'] || session.medicamento_necessario === filters['Precisa de Medicação']) &&
                     isReavaliacao
             }).sort((a, b) => new Date(a.data + 'T00:00:00') - new Date(b.data + 'T00:00:00') || (a.horario || '').localeCompare(b.horario || ''));
-            
+
             let tableRows = filteredSessions.map(session => `
                 <tr>
                     <td>${session.data ? new Date(session.data + 'T00:00:00').toLocaleDateString('pt-BR') : '-'}</td>
@@ -1834,8 +2136,15 @@
         }
 
         function generateMedicationReport(startDate, endDate, filters) {
-            const allSessions = dataManager.getPacientes().flatMap(p => p.cronograma.map(s => ({ ...s, pacienteId: p.pacienteId, pacienteNome: p.nome, pacienteMedico: p.medico, pacienteProtocolo: p.protocolo, pacienteTipo: p.tipo })));
-            
+            const allSessions = dataManager.getPacientes().flatMap(p => p.cronograma.map(s => ({
+                ...s,
+                pacienteId: p.pacienteId,
+                pacienteNome: p.nome,
+                pacienteMedico: p.medico,
+                pacienteProtocolo: p.protocolo,
+                pacienteTipo: p.tipo
+            })));
+
             const filteredSessions = allSessions.filter(session => {
                 const paciente = dataManager.getPacienteById(session.pacienteId);
                 const isReavaliacao = filters['Reavaliação Agendada'] === 'sim' ? paciente.dataReavaliacao : filters['Reavaliação Agendada'] === 'nao' ? !paciente.dataReavaliacao : true;
@@ -1851,9 +2160,9 @@
                     (!filters['Precisa de Medicação'] || session.medicamento_necessario === filters['Precisa de Medicação']) &&
                     isReavaliacao;
             });
-            
+
             const medicationData = {};
-            
+
             filteredSessions.forEach(session => {
                 if (session.medicacoes) {
                     session.medicacoes.forEach(medRef => {
@@ -1873,9 +2182,9 @@
                     });
                 }
             });
-            
+
             let tableRows = Object.entries(medicationData)
-                .sort(([,a], [,b]) => b.count - a.count)
+                .sort(([, a], [, b]) => b.count - a.count)
                 .map(([medId, data]) => `
                     <tr>
                         <td><strong>${data.nome}</strong></td>
@@ -1909,7 +2218,7 @@
             const filteredSessions = allSessions.filter(session => session.data >= startDate && session.data <= endDate);
             const finalizadasSessions = filteredSessions.filter(s => s.status === 'finalizada');
             const uniquePatients = new Set(filteredSessions.map(s => s.pacienteId)).size;
-            
+
             const totalPacientes = dataManager.getPacientes().length;
             const pacientesAtivos = dataManager.getPacientes().filter(p => p.status !== 'finalizado').length;
 
@@ -1918,7 +2227,7 @@
             const sessionsCompleted = allPatients.flatMap(p => p.cronograma).filter(s => s.status === 'finalizada').length;
             const reavaliacaoPending = allPatients.filter(p => p.status === 'finalizado' && !p.dataReavaliacao).length;
             const overdue = allPatients.flatMap(p => p.cronograma).filter(s => new Date(s.data) < new Date() && s.status !== 'finalizada' && s.status !== 'reavaliacao').length;
-            
+
             return `
                 <div class="report-section">
                     <p class="mb-4 text-sm"><strong>Período:</strong> ${new Date(startDate + 'T00:00:00').toLocaleDateString('pt-BR')} a ${new Date(endDate + 'T00:00:00').toLocaleDateString('pt-BR')}</p>
@@ -1944,11 +2253,11 @@
                 </div>
             `;
         }
-        
+
         function printReportContent() {
             const printContent = document.getElementById('modalReportContent').innerHTML;
             const reportTitle = document.getElementById('reportModalTitle').textContent;
-            
+
             const printWindow = window.open('', '_blank');
             printWindow.document.write(`
                 <html>
@@ -1992,7 +2301,7 @@
             }
 
             let csvContent = '\uFEFF'; // BOM for UTF-8
-            
+
             // Adicionar filtros no início do CSV
             const filterDiv = reportContent.querySelector('.report-filters-line');
             if (filterDiv) {
@@ -2004,7 +2313,7 @@
                 }).join('\n');
                 csvContent += filters + '\n\n';
             }
-            
+
             tables.forEach(table => {
                 const rows = table.querySelectorAll('tr');
                 // Headers
@@ -2017,15 +2326,17 @@
                         // Limpa o texto, remove aspas e coloca o valor em aspas para garantir que o Excel interprete corretamente
                         let cellText = cell.textContent.trim().replace(/"/g, '""');
                         // Substituir quebras de linha por espaços para manter em uma única célula
-                        cellText = cellText.replace(/\n/g, ' ').replace(/\s+/g, ' '); 
+                        cellText = cellText.replace(/\n/g, ' ').replace(/\s+/g, ' ');
                         return `"${cellText}"`;
                     }).join(';');
                     csvContent += rowData + '\n';
                 }
                 csvContent += '\n';
             });
-            
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+
+            const blob = new Blob([csvContent], {
+                type: 'text/csv;charset=utf-8;'
+            });
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
             link.download = `${reportTitle.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.csv`;
@@ -2050,7 +2361,7 @@
             document.getElementById('tipoInput').value = '';
             document.getElementById('inicioInput').value = new Date().toISOString().split('T')[0];
         }
-        
+
         function showNotification(message, isError = false) {
             const notification = document.getElementById('notification');
             notification.textContent = message;
@@ -2063,12 +2374,15 @@
         function generateSchedule(startDate, protocolo) {
             const cronograma = [];
             let currentDate = new Date(startDate + 'T00:00:00'); // Use T00:00:00 para evitar problemas de fuso horário
-            
+
             const addSession = () => ({
                 sessionId: generateUUID(),
                 data: currentDate.toISOString().split('T')[0],
                 status: 'agendada',
-                horario: '', profissional: '', procedimento: '', medicacoes: []
+                horario: '',
+                profissional: '',
+                procedimento: '',
+                medicacoes: []
             });
 
             if (protocolo.frequencia === 'semanal') {
@@ -2087,9 +2401,18 @@
                     currentDate.setMonth(currentDate.getMonth() + 1);
                 }
             } else if (protocolo.frequencia === 'mista') {
-                for (let i = 0; i < (protocolo.semanais || 0); i++) { cronograma.push(addSession()); currentDate.setDate(currentDate.getDate() + 7); }
-                for (let i = 0; i < (protocolo.quinzenais || 0); i++) { cronograma.push(addSession()); currentDate.setDate(currentDate.getDate() + 14); }
-                for (let i = 0; i < (protocolo.mensais || 0); i++) { cronograma.push(addSession()); currentDate.setMonth(currentDate.getMonth() + 1); }
+                for (let i = 0; i < (protocolo.semanais || 0); i++) {
+                    cronograma.push(addSession());
+                    currentDate.setDate(currentDate.getDate() + 7);
+                }
+                for (let i = 0; i < (protocolo.quinzenais || 0); i++) {
+                    cronograma.push(addSession());
+                    currentDate.setDate(currentDate.getDate() + 14);
+                }
+                for (let i = 0; i < (protocolo.mensais || 0); i++) {
+                    cronograma.push(addSession());
+                    currentDate.setMonth(currentDate.getMonth() + 1);
+                }
             }
             return cronograma;
         }
@@ -2097,7 +2420,13 @@
         function showOverdueSessions() {
             const today = new Date();
             const todayStr = today.toISOString().split('T')[0];
-            const overdueSessions = dataManager.getPacientes().flatMap(p => p.cronograma.map(s => ({ ...s, pacienteId: p.pacienteId, pacienteNome: p.nome, pacienteProtocolo: p.protocolo, pacienteTipo: p.tipo })))
+            const overdueSessions = dataManager.getPacientes().flatMap(p => p.cronograma.map(s => ({
+                ...s,
+                pacienteId: p.pacienteId,
+                pacienteNome: p.nome,
+                pacienteProtocolo: p.protocolo,
+                pacienteTipo: p.tipo
+            })))
                 .filter(s => {
                     const sessionDate = new Date(s.data + 'T00:00:00');
                     const todayMidnight = new Date(today.getFullYear(), today.getMonth(), today.getDate());
@@ -2109,7 +2438,7 @@
 
             const modal = document.createElement('div');
             modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 no-print';
-            
+
             let tableRows = '';
             if (overdueSessions.length > 0) {
                 tableRows = overdueSessions.map(item => {
@@ -2136,7 +2465,7 @@
                         </div>
                     </div>
                     <div id="overdueContent">
-                        ${overdueSessions.length === 0 ? 
+                        ${overdueSessions.length === 0 ?
                             '<p class="text-gray-500 text-center py-4">✅ Nenhuma sessão atrasada!</p>' :
                             `<div class="mb-4">
                                 <p class="text-sm text-gray-600">Total: ${overdueSessions.length} sessões atrasadas</p>
@@ -2152,7 +2481,7 @@
 
         function showReavaliacaoModal() {
             const pacientesReavaliacao = dataManager.getPacientes().filter(p => p.status === 'finalizado' && !p.dataReavaliacao);
-            
+
             const modal = document.getElementById('reavaliacaoModal');
             const list = document.getElementById('reavaliacaoList');
             list.innerHTML = '';
@@ -2212,7 +2541,10 @@
                     const med = dataManager.getConfigItem('medicacoes', medRef.medicationId);
                     if (med) {
                         const medName = med.displayName || med.nome;
-                        if (!medicationStats[medName]) medicationStats[medName] = { totalUses: 0, totalQuantity: 0 };
+                        if (!medicationStats[medName]) medicationStats[medName] = {
+                            totalUses: 0,
+                            totalQuantity: 0
+                        };
                         medicationStats[medName].totalUses++;
                         medicationStats[medName].totalQuantity += medRef.quantidade || 0;
                     }
@@ -2220,7 +2552,7 @@
             });
             const medico = dataManager.getConfigItem('medicos', paciente.medico)?.nome || 'N/A';
             const protocolo = dataManager.getConfigItem('protocolos', paciente.protocolo)?.nome || 'N/A';
-            
+
             // Alteração na estrutura do HTML para o resumo de impressão
             let content = `
                 <div class="header"><h1>TricoMaster Pro - Resumo do Tratamento</h1><p class="date">Relatório gerado em: ${new Date().toLocaleString('pt-BR')}</p></div>
@@ -2245,7 +2577,7 @@
                         <table class="medication-table">
                             <thead><tr><th>Medicação</th><th>Qtd Utilizada</th><th>Quantidade Total</th></tr></thead>
                             <tbody>
-                                ${Object.entries(medicationStats).sort(([,a], [,b]) => b.totalUses - a.totalUses).map(([medName, stats]) => `
+                                ${Object.entries(medicationStats).sort(([, a], [, b]) => b.totalUses - a.totalUses).map(([medName, stats]) => `
                                     <tr><td>${medName}</td><td>${stats.totalUses}</td><td>${stats.totalQuantity}</td></tr>
                                 `).join('')}
                             </tbody>
@@ -2315,16 +2647,16 @@
             });
 
             document.getElementById('loginBtn').addEventListener('click', login);
-            
+
             const hasData = dataManager.getPacientes().length > 0 || Object.keys(dataManager.getConfigData().medicos).length > 0;
             if (!hasData) {
-                showWelcomeModal();
+                // showWelcomeModal();
             }
-            checkAutoBackup();
+            // checkAutoBackup();
             refreshUI();
             clearForm();
         });
-        
     </script>
 </body>
+
 </html>
