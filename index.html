@@ -1509,16 +1509,17 @@
         }
 
         async function addConfigItem() {
-            const input = document.getElementById('newItemInput');
-            const nome = input.value.trim();
-            if (!nome) { showNotification('Digite um nome válido!', true); return; }
-            if (dataManager.getConfigArray(currentConfigType).some(item => item.nome === nome)) { showNotification('Este item já existe!', true); return; }
-            
-            await dataManager.addConfigItem(currentConfigType, { nome });
-            input.value = '';
-            renderConfigItems();
-        }
-
+    const input = document.getElementById('newItemInput');
+    const nome = input.value.trim();
+    if (!nome) { showNotification('Digite um nome válido!', true); return; }
+    if (dataManager.getConfigArray(currentConfigType).some(item => item.nome === nome)) { showNotification('Este item já existe!', true); return; }
+    
+    
+    await dataManager.addConfigItem(currentConfigType, { nome });
+    input.value = '';
+    renderConfigItems(); // Essa linha garante que a lista seja atualizada
+}
+         
         async function editConfigItem(id, newValue) {
             const item = dataManager.getConfigItem(currentConfigType, id);
             if (!item || !newValue.trim()) { showNotification('Digite um nome válido!', true); return; }
@@ -2241,4 +2242,5 @@
     </script>
 </body>
 </html>
+
 
